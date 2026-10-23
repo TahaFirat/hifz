@@ -1,4 +1,4 @@
-import type { Lesson, Word } from './types';
+import type { Lesson, Word, Verse } from './types';
 import { plain } from './core.ts';
 /** Display the Turkish source transcription; never synthesize it from English. */
 export function readableTurkish(text: string): string {
@@ -66,4 +66,9 @@ export function withTurkishSource(lesson: Lesson, chapter: number, source: Recor
             const words = isolated?.length === v.words.length ? v.words.map((w, i) => ({ ...w, reading: isolated[i] })) : sourceGroups(v.words, row.reading, meaning);
             return { ...v, reading: readableTurkish(row.reading), meaning, words, approximate: false };
         }) };
+}
+/** Never invent a word reading when the source only supplies a connected phrase. */
+export function displayWords(verse: Verse): Word[] {
+    if (verse.words.every(w => w.reading)) return verse.words;
+    return [{ arabic: verse.words.map(w => w.arabic).join(' '), reading: verse.reading, meaning: verse.meaning }];
 }
