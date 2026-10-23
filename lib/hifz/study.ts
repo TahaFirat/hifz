@@ -1,4 +1,5 @@
 import type { StudyMode } from './learning';
+import type { Content } from './types';
 
 export type StudyState = { level: number; mode: StudyMode; step: number; cursor: number; spotlight: boolean; reveals: Record<string, boolean> };
 export const defaultStudy = (): StudyState => ({ level: 0, mode: 'standard', step: 1, cursor: 0, spotlight: false, reveals: {} });
@@ -14,4 +15,10 @@ export function restoreStudy(value: unknown): StudyState {
 export function lessonRange(start: unknown, end: unknown, content: {start: number; end: number}): [number, number] {
     const s = Number(start), e = Number(end);
     return start !== undefined && end !== undefined && Number.isInteger(s) && Number.isInteger(e) && s >= content.start && e <= content.end && e >= s && e - s < 20 ? [s, e] : [content.start, Math.min(content.end, content.start + (content.end - content.start > 19 ? 4 : 19))];
+}
+/** Shared by initial props and offline-shell recovery; unknown query values use the catalog default. */
+export function lessonSelection(input: {category?: string | null; key?: string | null; start?: string | null; end?: string | null}, lists: Record<'basics' | 'prayers' | 'all', Content[]>) {
+    const category = input.category === 'prayers' || input.category === 'all' ? input.category : 'basics';
+    const content = lists[category].find(c => c.key === input.key) || lists[category][0];
+    return {category, content, range: lessonRange(input.start ?? undefined, input.end ?? undefined, content)};
 }

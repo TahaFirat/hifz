@@ -53,10 +53,12 @@ Anahtar tarayıcıya gönderilmez. Sunucuda `GEMINI_API_KEY` tanımlanınca `@go
 
 ## Doğrulama
 
-`npm test`: gizleme, zincirleme, sınırlar, tüm gömülü içerik katmanları ve sağlayıcı başarısızlıkları için 28 test. Sağlayıcı yedekleri fixture ile sınanır; bunlar canlı servis testi değildir.
+`npm test`: gizleme, zincirleme, sınırlar, tüm gömülü içerik katmanları ve sağlayıcı başarısızlıkları için 37 test. Sağlayıcı yedekleri fixture ile sınanır; bunlar canlı servis testi değildir.
 
 `node scripts/check-live-bulk.mjs`: dört toplu sürümde 114 sure / 6236 ayet eksiksizliği. Tüm MP3'leri çalmaz. Ayrı sure çağrılarını çok sık yapmak HTTP 429 üretebilir; denetim için toplu çağrıyı tercih edin.
 
 Odak düğmesi standart/boşluk doldurma görünümünde tek ayeti gösterir; önceki/sonraki oklarıyla geçiş yapılır. Escape odaktan çıkar; / aramayı açar. Space, giriş alanları ve düğmeler dışında sıradaki kelimeyi açar. Çalışma modu, aşama, zincirleme adımı, ayet konumu ve açılan kelimeler içerik/aralık başına cihazda saklanır. Yazı boyutu ve görünüm katmanları da hatırlanır. Ana sayfadaki Devam et bağlantısı son ayet aralığını taşır.
+
+Aynı seçili sureye yeniden basmak ilerlemeyi sıfırlamaz. Bozuk önbellek/eksik yanıt gösterilmez; görünümde en az bir katman açık tutulur. Zincirleme modunun otomatik ipuçları sırasında elle aşama seçimi devre dışıdır. Ses oturumu sayfadan ayrılınca iptal edilir. Çevrimdışı sayfalar sorgu adresine göre ayrı saklanır.
 
 Ayrıntılı gerçekleşen kontroller ve sınırlamalar `VERIFICATION.md` dosyasındadır.

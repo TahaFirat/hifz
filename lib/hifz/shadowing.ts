@@ -5,12 +5,19 @@ type Phase = 'listen' | 'pause' | 'check' | null;
 export function createShadowSession(verse: Verse, repeat: boolean, update: (phase: Phase) => void) {
     let cancelled = false, timer: ReturnType<typeof setTimeout> | undefined, audio: HTMLAudioElement | undefined, utterance: SpeechSynthesisUtterance | undefined;
     let phase: Phase = 'listen', started = 0;
+    const releaseAudio = () => {
+        const current = audio; audio = undefined;
+        if (current) {
+            current.onended = null; current.onerror = null;
+            try { current.pause(); current.removeAttribute?.('src'); current.load?.(); } catch {}
+        }
+    };
     const cancel = () => {
         cancelled = true; clearTimeout(timer);
-        if (audio) { audio.onended = null; audio.onerror = null; audio.pause(); }
-        if (utterance) { utterance.onend = null; utterance.onerror = null; speechSynthesis.cancel(); }
+        releaseAudio();
+        if (utterance) { utterance.onend = null; utterance.onerror = null; try { speechSynthesis.cancel(); } catch {} }
     };
-    const finish = () => { cancel(); update(null); };
+    const finish = () => { if (!cancelled) { cancel(); update(null); } };
     const ended = (duration: number) => {
         if (cancelled) return;
         if (!repeat || phase === 'check') { finish(); return; }
@@ -20,19 +27,27 @@ export function createShadowSession(verse: Verse, repeat: boolean, update: (phas
     const play = () => {
         if (cancelled) return;
         update(phase); started = Date.now();
-        if (verse.audio) {
-            audio = new Audio(verse.audio);
-            audio.onended = () => ended(audio?.duration || (Date.now() - started) / 1000);
-            audio.onerror = finish;
-            void audio.play().catch(() => { if (!cancelled) finish(); });
+        try { if (verse.audio) {
+            const current = new Audio(verse.audio); audio = current;
+            current.onended = () => {
+                if (cancelled || audio !== current) return;
+                const duration = current.duration || (Date.now() - started) / 1000;
+                releaseAudio(); ended(duration);
+            };
+            current.onerror = () => { if (audio === current) finish(); };
+            void current.play().catch(() => { if (audio === current) finish(); });
         } else if (typeof speechSynthesis !== 'undefined') {
             const voice = speechSynthesis.getVoices().find(v => v.lang.startsWith('ar'));
             if (!voice) { finish(); return; }
-            utterance = new SpeechSynthesisUtterance(verse.arabic); utterance.voice = voice; utterance.rate = .8;
-            utterance.onend = () => ended((Date.now() - started) / 1000);
-            utterance.onerror = () => { if (!cancelled) finish(); };
-            speechSynthesis.speak(utterance);
-        } else finish();
+            const current = new SpeechSynthesisUtterance(verse.arabic); utterance = current; current.voice = voice; current.rate = .8;
+            current.onend = () => {
+                if (cancelled || utterance !== current) return;
+                current.onend = null; current.onerror = null; utterance = undefined;
+                ended((Date.now() - started) / 1000);
+            };
+            current.onerror = () => { if (utterance === current) finish(); };
+            speechSynthesis.speak(current);
+        } else finish(); } catch { finish(); }
     };
     play(); return { cancel };
 }

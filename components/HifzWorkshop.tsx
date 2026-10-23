@@ -7,7 +7,8 @@ import { prayers } from '@/lib/hifz/prayers';
 import offlineData from '@/lib/hifz/offline.json';
 import { validRange } from '@/lib/hifz/core';
 import { stages, stageHidden, firstArabic, firstReading, chainFrame, choicesFor, type StudyMode } from '@/lib/hifz/learning';
-import { restoreStudy, lessonRange } from '@/lib/hifz/study';
+import { restoreStudy, lessonSelection } from '@/lib/hifz/study';
+import { isLesson, restoreDisplay } from '@/lib/hifz/validation';
 import { displayWords } from '@/lib/hifz/readings';
 import { createShadowSession } from '@/lib/hifz/shadowing';
 import type { Content, Lesson, Verse } from '@/lib/hifz/types';
@@ -35,9 +36,8 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
     initialStart?: string;
     initialEnd?: string;
 }) {
-    const initialList = initialCategory === 'prayers' ? prayerCatalog : initialCategory === 'all' ? allChapters : basics;
-    const initialContent = initialList.find(c => c.key === initialKey) || initialList[0];
-    const initialRange = lessonRange(initialStart, requestedEnd, initialContent);
+    const initialSelection = lessonSelection({category: initialCategory, key: initialKey, start: initialStart, end: requestedEnd}, {basics, prayers: prayerCatalog, all: allChapters});
+    const initialContent = initialSelection.content, initialRange = initialSelection.range;
     const initialEnd = initialRange[1];
     const initialData = prayers[initialContent.key] || offline[initialContent.chapter];
     const initialVerses = useMemo(() => initialData?.verses.filter(v => v.number >= initialRange[0] && v.number <= initialEnd).map(v => ({...v, words: displayWords(v)})) || [], [initialData, initialRange[0], initialEnd]);
@@ -59,7 +59,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
     const stop = useCallback(() => { session.current?.cancel(); session.current = null; setPlaying(null); }, []);
     useEffect(() => { try { const d = JSON.parse(read('hifz:difficult:v1') || '{}'); if (d && typeof d === 'object' && !Array.isArray(d)) setDifficult(d); } catch {} }, []);
     useEffect(() => {
-        try { const p = JSON.parse(read('hifz:display:v1') || 'null'); if (p && typeof p === 'object') { setFont([0,1,2].includes(p.font) ? p.font : 0); if (typeof p.arabic === 'boolean') setShowArabic(p.arabic); if (typeof p.reading === 'boolean') setShowReading(p.reading); if (typeof p.meaning === 'boolean') setShowMeaning(p.meaning); } } catch {}
+        try { const p = restoreDisplay(JSON.parse(read('hifz:display:v1') || 'null')); setFont(p.font); setShowArabic(p.arabic); setShowReading(p.reading); setShowMeaning(p.meaning); } catch {}
         setDisplayReady(true);
     }, []);
     useEffect(() => { if (displayReady) save('hifz:display:v1', {font, arabic: showArabic, reading: showReading, meaning: showMeaning}); }, [displayReady, font, showArabic, showReading, showMeaning]);
@@ -68,21 +68,28 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
     const changeMode = (next: StudyMode) => { stop(); setMode(next); setReveals({}); setWrong(null); setFocus(false); setStep(1); if (next === 'quiz') setLevel(4); };
     const studyKey = `hifz:study:v1:${selected.key}:${range[0]}:${range[1]}`;
     useEffect(() => {
+        // An offline navigation can use the generic cached shell. Recover the actual URL selection.
+        const p = new URLSearchParams(location.search);
+        const next = lessonSelection({category:p.get('kategori'), key:p.get('icerik'), start:p.get('baslangic'), end:p.get('bitis')}, {basics, prayers:prayerCatalog, all:allChapters});
+        if (next.category !== category || next.content.key !== selected.key || next.range[0] !== range[0] || next.range[1] !== range[1]) {
+            setCategory(next.category); setSelected(next.content); setRange(next.range);
+        }
+    }, [initialCategory, initialKey, initialStart, requestedEnd]);
+    useEffect(() => {
         if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').then(() => navigator.serviceWorker.ready).then(reg => { reg.active?.postMessage({ type: 'CACHE_ASSETS', urls: performance.getEntriesByType('resource').map(r => r.name).filter(url => new URL(url).origin === location.origin && /\.(js|css|ttf|svg)(\?|$)/.test(url)) }); }).catch(() => { });
         }
-        return stop;
+        window.addEventListener('pagehide', stop);
+        return () => { window.removeEventListener('pagehide', stop); stop(); };
     }, [stop]);
     useEffect(() => {
         stop();
-        setReveals({});
-        setStep(1);
         setFailed(false);
         setLesson({ verses: [], source: '' });
         setLoading(true);
         const g = ++generation.current, controller = new AbortController(), cacheKey = `hifz:lesson:v4:${selected.chapter}:${range[0]}:${range[1]}`;
         const apply = (l: Lesson) => {
-            if (g === generation.current) {
+            if (g === generation.current && !controller.signal.aborted) {
                 setLesson({...l, verses: l.verses.map(v => ({...v, words: displayWords(v)}))});
                 setLoading(false);
             }
@@ -98,7 +105,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
         }
         try {
             const cached = JSON.parse(read(cacheKey) || 'null');
-            if (cached?.verses?.length === range[1] - range[0] + 1) {
+            if (isLesson(cached, range[0], range[1])) {
                 apply(cached);
                 return;
             }
@@ -110,6 +117,8 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
             };
             if (!r.ok)
                 throw Error(d.error || 'İçerik yüklenemedi.');
+            if (!isLesson(d, range[0], range[1])) throw Error('Eksik içerik');
+            if (controller.signal.aborted || g !== generation.current) return;
             save(cacheKey, d);
             apply(d);
         }).catch(e => {
@@ -147,7 +156,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
     };
     const pool = useMemo(() => [...lesson.verses.flatMap(v => v.words), ...offline['1'].verses.flatMap(v => v.words)], [lesson]);
     const toggle = (id: string, h: boolean) => setReveals(prev => ({ ...prev, [id]: h }));
-    const select = (c: Content) => { stop(); setSelected(c); setRange([c.start, c.end - c.start > 19 ? c.start + 4 : c.end]); setQuery(''); setCustom(false); };
+    const select = (c: Content) => { if (selected.key === c.key) { setQuery(''); setCustom(false); return; } stop(); setSelected(c); setRange([c.start, c.end - c.start > 19 ? c.start + 4 : c.end]); setQuery(''); setCustom(false); };
     const changeCategory = (c: string) => { setCategory(c); select((c === 'basics' ? basics : c === 'prayers' ? prayerCatalog : allChapters)[0]); };
     const revealVerse = (v: Verse, open: boolean) => setReveals(prev => { const next = { ...prev }; v.words.forEach((_, wi) => next[wordKey(v.number, wi)] = open); next[wordKey(v.number, 'reading')] = open; next[wordKey(v.number, 'meaning')] = open; return next; });
     const hint = () => {
@@ -209,8 +218,8 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
             }}><input aria-label="Başlangıç" type="number" required min={selected.start} max={selected.end} value={draft[0]} onChange={e => setDraft([e.target.value, draft[1]])}/><span>–</span><input aria-label="Bitiş" type="number" required min={Math.max(selected.start, Number(draft[0]))} max={Math.min(selected.end, Number(draft[0]) + 19)} value={draft[1]} onChange={e => setDraft([draft[0], e.target.value])}/><button className="icon-button" aria-label="Aralığı seç"><ArrowRight size={19}/></button></form>}
    </section>
    <section className="memory-panel" aria-label="Ezber kontrolleri">
-    <div className="levels" ref={levelBar} aria-label="Gizleme seviyesi">{levels.map((label, i) => <button key={label} aria-pressed={!focus && level === i} className={!focus && level === i ? 'current' : ''} onClick={() => changeStage(i)}>{label}</button>)}<button className={focus ? 'current' : ''} aria-pressed={focus} onClick={() => {stop(); setFocus(!focus); setReveals({}); setWrong(null);}}>🎯 Zorlandıklarım</button></div>
-    <div className="view-toggles" aria-label="Görünüm">{[{ label: 'Arapça', show: showArabic, set: setShowArabic }, { label: 'Okunuş', show: showReading, set: setShowReading }, { label: 'Meal', show: showMeaning, set: setShowMeaning }].map(t => <button key={t.label} aria-pressed={t.show} onClick={() => t.set(!t.show)}><span className={`toggle ${t.show ? 'on' : ''}`}/>{t.label}</button>)}</div>
+    <div className="levels" ref={levelBar} aria-label="Gizleme seviyesi">{levels.map((label, i) => <button key={label} disabled={mode === 'chain'} aria-pressed={mode !== 'chain' && !focus && level === i} className={mode !== 'chain' && !focus && level === i ? 'current' : ''} onClick={() => changeStage(i)}>{label}</button>)}<button className={focus ? 'current' : ''} aria-pressed={focus} onClick={() => {stop(); setFocus(!focus); setReveals({}); setWrong(null);}}>🎯 Zorlandıklarım</button></div>
+    <div className="view-toggles" aria-label="Görünüm">{[{ label: 'Arapça', show: showArabic, set: setShowArabic }, { label: 'Okunuş', show: showReading, set: setShowReading }, { label: 'Meal', show: showMeaning, set: setShowMeaning }].map(t => <button key={t.label} aria-pressed={t.show} disabled={t.show && [showArabic, showReading, showMeaning].filter(Boolean).length === 1} onClick={() => t.set(!t.show)}><span className={`toggle ${t.show ? 'on' : ''}`}/>{t.label}</button>)}</div>
    </section>
    <div className="lesson-bar"><h1 className="lesson-title">{selected.name}</h1><div className="lesson-tools">
     {spotlight && mode !== 'chain' && <nav className="focus-navigation" aria-label="Ayetler"><button className="icon-button" aria-label="Önceki ayet" disabled={loading || current === 0} onClick={() => moveVerse(-1)}><ChevronLeft size={19}/></button><button className="icon-button" aria-label="Sonraki ayet" disabled={loading || current >= lesson.verses.length - 1} onClick={() => moveVerse(1)}><ChevronRight size={19}/></button></nav>}
