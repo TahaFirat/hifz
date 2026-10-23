@@ -10,3 +10,5 @@
 - **skipped**: Gemini live generation (no API key); exhaustive playback of every ayah MP3; independent scholarly review of prayer text; offline cold reload pending browser capability.
 
 TypeScript checking and production build are executed separately before publication. No benchmark or provider availability guarantee is implied.
+- **live-tested (production package)**: local production Worker returned HTTP 200 for /, /sw.js, /manifest.webmanifest, /api/enrich. Browser ayah loop progressed through 1/3 and 3/3, then returned to idle without console errors. Space after a focused level button opened the next hidden word (2/4 to 3/4).
+- **deployed**: first private Sites deployment succeeded. Hosted browser reached the owner sign-in gate; authenticated hosted UI inspection requires the owner's login.

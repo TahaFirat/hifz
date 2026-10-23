@@ -120,7 +120,7 @@ export default function Home() {
                 toggle(wordKey(v.number, wi), true);
                 return;
             } setNotice('Görünür ayetlerdeki bütün kelimeler açık.'); };
-    useEffect(() => { const handler = (e: KeyboardEvent) => { const el = e.target as HTMLElement; if (e.code === 'Space' && !e.repeat && !['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(el.tagName) && !el.isContentEditable && !settings) {
+    useEffect(() => { const handler = (e: KeyboardEvent) => { const el = e.target as HTMLElement; if (e.code === 'Space' && !e.repeat && !['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) && !el.isContentEditable && !settings) {
         e.preventDefault();
         hint();
     } if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) && !settings) {
