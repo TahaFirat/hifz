@@ -12,3 +12,9 @@
 TypeScript checking and production build are executed separately before publication. No benchmark or provider availability guarantee is implied.
 - **live-tested (production package)**: local production Worker returned HTTP 200 for /, /sw.js, /manifest.webmanifest, /api/enrich. Browser ayah loop progressed through 1/3 and 3/3, then returned to idle without console errors. Space after a focused level button opened the next hidden word (2/4 to 3/4).
 - **deployed**: first private Sites deployment succeeded. Hosted browser reached the owner sign-in gate; authenticated hosted UI inspection requires the owner's login.
+
+## Minimal interface revision
+
+- Removed all visible technical/status text, descriptions, word counters, footer, full-ayah reading blocks and in-tile word meanings. Existing provider/API/data contracts remain unchanged.
+- Production browser verified: only verse number text in card headers; no technical text, footer, word-meaning rows or full-reading rows. Arabic, reading and meal toggles each remove the requested layer. 50% concealment and tap reveal work; chain mode grows from one to two ayahs; A+ increases the Arabic font.
+- 390px responsive layout visually checked. Existing 13 tests and TypeScript checks passed. The development preview encountered a React dependency/context error; production bundle UI ran successfully and is the browser-tested artifact.
