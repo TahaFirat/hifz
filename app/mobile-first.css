@@ -97,10 +97,10 @@
  .home-header{height:68px;padding-inline:max(16px,env(safe-area-inset-left))}
  .home-content{min-height:calc(100dvh - 68px);padding:22px max(16px,env(safe-area-inset-right)) max(32px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
  .home-content>h1{font-size:clamp(23px,6vw,28px);line-height:1.3;margin-bottom:22px}
- .entry-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
- .entry-card{min-width:0;min-height:112px;padding:14px;gap:12px;border-radius:10px}
- .entry-card>span{font-size:clamp(14px,4vw,17px);overflow-wrap:anywhere}
- .entry-card>svg:last-child{right:12px;bottom:14px}
+ .entry-grid{grid-template-columns:minmax(0,1fr);gap:8px}
+ .entry-card{min-width:0;min-height:68px;padding:12px 14px;flex-direction:row;align-items:center;gap:12px;border-radius:10px}
+ .entry-card>span{font-size:clamp(15px,4vw,17px);overflow-wrap:anywhere}
+ .entry-card>svg:last-child{position:static;margin-left:auto}
  .quick-links{flex-wrap:wrap;gap:8px 12px;font-size:12px}
  .resume-link{min-height:44px}
 }
@@ -113,7 +113,7 @@
  .repetition-dots span{width:26px;height:26px}
  .view-toggles button{font-size:11px}
  .entry-grid{grid-template-columns:minmax(0,1fr)}
- .entry-card{min-height:68px;padding:12px 14px}
+ .entry-card{min-height:64px;padding:10px 12px}
 }
 
 @media(max-height:500px) and (orientation:landscape){
