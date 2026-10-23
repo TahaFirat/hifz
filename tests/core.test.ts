@@ -30,7 +30,7 @@ test('all 26 embedded selections have complete verse and word layers', () => { c
         assert.ok(v, `${id}:${n}`);
         assert.ok(v.arabic && v.reading && v.meaning && v.words.length);
         for (const w of v.words)
-            assert.ok(w.arabic && w.reading && w.meaning, `${id}:${n}: incomplete word`);
+            assert.ok(w.arabic && (w.reading || v.reading) && w.meaning, `${id}:${n}: incomplete word`);
     }
 } });
 test('eight complete prayer texts have aligned phrase layers', () => { assert.equal(Object.keys(prayers).length, 8); for (const prayer of Object.values(prayers)) {
@@ -41,3 +41,12 @@ test('eight complete prayer texts have aligned phrase layers', () => { assert.eq
 test('recitation urls preserve surah and ayah ids', () => { assert.equal(verseAudio(2, 255), 'https://everyayah.com/data/Alafasy_128kbps/002255.mp3'); assert.equal(verseAudio(114, 6), 'https://everyayah.com/data/Alafasy_128kbps/114006.mp3'); });
 import { stripBasmala } from '../lib/hifz/core.ts';
 test('non-numbered basmala does not enter first ayah alignment', () => { const text = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ يسٓ'; assert.equal(stripBasmala(text, 36, 1), 'يسٓ'); assert.equal(stripBasmala(text, 1, 1), text); assert.equal(stripBasmala('يسٓ', 36, 1), 'يسٓ'); });
+import { readableTurkish, sourceGroups, withTurkishSource } from '../lib/hifz/readings.ts';
+const turkish=JSON.parse(fs.readFileSync(new URL('../lib/hifz/turkish.json',import.meta.url),'utf8'));
+test('all 6236 verses have complete source Turkish reading and meaning',()=>{let count=0;for(const c of chapters){assert.equal(Object.keys(turkish[c.id]).length,c.verseCount);for(let n=1;n<=c.verseCount;n++){const row=turkish[c.id][n];assert.ok(row.reading&&row.meaning);count++;}}assert.equal(count,6236);});
+test('Fatiha restores Allah and sun-letter word onsets without English fragments',()=>{assert.deepEqual(data[1].verses[0].words.map((w:{reading:string})=>w.reading),['Bismi','Allâhi','Errahmâni','Errahîm']);assert.equal(data[1].verses[0].reading,'Bismillâhirrahmânirrahîm.');assert.ok(!/l-lahi|l-rahm/i.test(JSON.stringify(data[1].verses)));});
+test('source transcription keeps connected reading and normalizes only typography',()=>{assert.equal(readableTurkish('bismi-llâhi-rraḥmâni-rraḥîm.'),'Bismillâhirrahmânirrahîm.');});
+test('uncertain word alignment preserves Arabic masking and intact source reading',()=>{const words=[{arabic:'أ',reading:'unrelated',meaning:'A'},{arabic:'ب',reading:'different',meaning:'B'}];const result=sourceGroups(words,'Doğru kaynak okunuşu.','Kaynak meal');assert.equal(result.length,2);assert.deepEqual(result.map(w=>w.arabic),['أ','ب']);assert.ok(result.every(w=>w.reading===''));const lesson=withTurkishSource({verses:[{number:1,arabic:'أ ب',reading:'broken',meaning:'wrong',words}],source:'fixture'},2,{'1':{reading:'Doğru kaynak okunuşu.',meaning:'Kaynak meal'}});assert.equal(lesson.verses[0].reading,'Doğru kaynak okunuşu.');assert.equal(lesson.verses[0].meaning,'Kaynak meal');});
+import { plain } from '../lib/hifz/core.ts';
+test('translation cleanup removes footnote markers without deleting text',()=>{assert.equal(plain('Anlam<sup foot_note="1">1</sup>&nbsp;ve&nbsp;devam.'),'Anlam ve devam.');});
+test('Yasin verse meanings come from the aligned individual verse source',()=>{assert.equal(turkish[36][2].meaning,"Hikmet dolu Kur'an hakkı için,");});

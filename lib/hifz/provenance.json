@@ -32,6 +32,15 @@
     114
   ],
   "verses": 156,
-  "wordReading": "Deterministic phonetic conversion from Quran.com transliteration; full Turkish reading from AlQuran Cloud.",
-  "acikkuran": "DNS resolution failed during initial retrieval."
+  "wordReading": "Muhammet Abay Turkish source transcription; exact source phrase alignment, intact verse reading when alignment is uncertain. Fatiha independent word onsets curated.",
+  "acikkuran": "DNS resolution failed during initial retrieval.",
+  "turkishCorpus": {
+    "verses": 6236,
+    "chapters": 114,
+    "editions": [
+      "tr.transliteration",
+      "tr.vakfi"
+    ],
+    "retrievedAt": "2026-10-23T13:29:42.155Z"
+  }
 }

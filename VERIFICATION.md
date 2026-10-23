@@ -18,3 +18,10 @@ TypeScript checking and production build are executed separately before publicat
 - Removed all visible technical/status text, descriptions, word counters, footer, full-ayah reading blocks and in-tile word meanings. Existing provider/API/data contracts remain unchanged.
 - Production browser verified: only verse number text in card headers; no technical text, footer, word-meaning rows or full-reading rows. Arabic, reading and meal toggles each remove the requested layer. 50% concealment and tap reveal work; chain mode grows from one to two ayahs; A+ increases the Arabic font.
 - 390px responsive layout visually checked. Existing 13 tests and TypeScript checks passed. The development preview encountered a React dependency/context error; production bundle UI ran successfully and is the browser-tested artifact.
+
+## Turkish source, entry page and themes revision
+
+- **live-tested data**: AlQuran Cloud `tr.transliteration` and `tr.vakfi` bulk endpoints returned all 114 chapters / 6236 populated Turkish readings and meanings. Turkish source is stored in lib/hifz/turkish.json. Fatiha independent word onsets were corrected; English per-word fragments are no longer displayed. Where exact phrase alignment cannot be proven, Arabic word masking remains intact and the unbroken source Turkish reading is shown.
+- **fixture-tested / local data**: 19 tests passed, including corpus completeness, Fatiha regressions, uncertain alignment, footnote removal, individual Yasin meaning and existing provider fallback cases. These checks do not constitute a scholarly review of every pronunciation.
+- **production browser**: entry page and direct category links, light theme carried into practice, dark theme carried back home, corrected Allâhi/Errahmâni/Errahîm labels, mobile 390px without horizontal document overflow. Cards reduced in height; provider/API shapes retained.
+- Routes: `/` entry; `/calis` practice. Theme persists in localStorage. Lesson cache namespace advanced so older broken readings are not reused.

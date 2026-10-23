@@ -11,7 +11,9 @@ npm install
 npm run dev
 ```
 
-Önizleme: http://127.0.0.1:5173
+Önizleme: http://127.0.0.1:5173 · Giriş: `/` · Ezber: `/calis`
+
+Açık/koyu tema seçimi cihazda hatırlanır. Girişte kategori seçimi, hızlı bağlantılar ve son çalışmaya dönüş bulunur.
 
 ```sh
 npm run check
@@ -34,12 +36,12 @@ Windows'ta sistem npm sarmalayıcısı yanlış yol seçerse `node "C:/Program F
 
 ## Kaynaklar ve doğruluk
 
-- [AlQuran Cloud](https://alquran.cloud/api): tam Arapça metin, Muhammet Abay Türkçe çeviriyazı, Diyanet meali, Afâsî ses adresleri.
+- [AlQuran Cloud](https://alquran.cloud/api): tam Arapça metin, Muhammet Abay Türkçe çeviriyazı, Diyanet Vakfı meali, Afâsî ses adresleri.
 - [Quran.com API](https://api-docs.quran.com/): kelime Arapçaları ve Türkçe anlamları, Diyanet meali (77).
 - [Açık Kuran API](https://github.com/acik-kuran/acikkuran-api): birincil Türkçe kelime kaynağı; güncel `verseparts` rotası kullanılır. İlk canlı kontrolde DNS çözümlenemedi; bu kaynak çalışıyor olarak raporlanmaz.
 - [EveryAyah](https://everyayah.com/): alternatif ayet sesleri.
 
-**Kelime okunuşları**, Açık Kuran erişilemediğinde Quran.com çeviriyazısından otomatik fonetik dönüşümdür; doğrulanmış Türkçe kelime okunuşu olarak sunulmaz. Tam Türkçe okunuş ayrı olarak AlQuran Cloud'dan gelir. Bu kaynak da erişilemezse tam okunuş kelime dönüşümlerinden birleştirilir ve kaynak açıklamasında belirtilir. Kelime servisi eksikse metin yanlış eşleştirilmez; ayet anlamlı tek grup olarak korunur.
+Türkçe okunuşlar `tr.transliteration` (Muhammet Abay), ayet mealleri `tr.vakfi` (Diyanet Vakfı) kaynağındandır. 114 sure / 6236 ayetlik kaynak korpusu sunucuda gömülüdür. İngilizce kelime çevriyazısından Türkçe okunuş üretilmez. Fâtiha kelimelerinde bağımsız kelime başlangıçları düzenlenmiştir. Diğer ayetlerde yalnız kesin eşleşen kaynak grupları bölünür; eşleşme belirsizse Arapça kelime kartları korunur ve tam Türkçe kaynak okunuşu ayrı satırda gösterilir. Dipnot rakamları mealden temizlenir.
 
 Dualar anlam bütünlüğüne göre elle bölünmüş geleneksel metinlerdir. Rabbena dualarının Kur’an karşılıkları Bakara 2:201 ve İbrahim 14:41'dir. Namaz dualarının okunuşları için [Diyanet namaz rehberi](https://namaz.diyanet.gov.tr/) karşılaştırma kaynağıdır. Bu proje dinî metin uzmanı tarafından son redaksiyondan geçirilmiş sayılmaz.
 
@@ -51,7 +53,7 @@ Anahtar tarayıcıya gönderilmez. Sunucuda `GEMINI_API_KEY` tanımlanınca `@go
 
 ## Doğrulama
 
-`npm test`: gizleme, zincirleme, sınırlar, tüm gömülü içerik katmanları ve sağlayıcı başarısızlıkları için 13 test. Sağlayıcı yedekleri fixture ile sınanır; bunlar canlı servis testi değildir.
+`npm test`: gizleme, zincirleme, sınırlar, tüm gömülü içerik katmanları ve sağlayıcı başarısızlıkları için 19 test. Sağlayıcı yedekleri fixture ile sınanır; bunlar canlı servis testi değildir.
 
 `node scripts/check-live-bulk.mjs`: dört toplu sürümde 114 sure / 6236 ayet eksiksizliği. Tüm MP3'leri çalmaz. Ayrı sure çağrılarını çok sık yapmak HTTP 429 üretebilir; denetim için toplu çağrıyı tercih edin.
 

@@ -12,7 +12,7 @@ export function hiddenAt(level: number, index: number, count: number): boolean {
 export function effectiveLevel(level: number, chain: boolean, index: number, step: number): number {
     return chain ? (index < step - 1 ? 2 : 0) : level;
 }
-export function plain(text: string): string { return text.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, '').trim(); }
+export function plain(text: string): string { return text.replace(/<sup\b[^>]*>[\s\S]*?<\/sup>/gi, '').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&(?:nbsp|#160);/g, ' ').replace(/&(?:quot|#34);/g, '"').replace(/&(?:apos|#39);/g, "'").replace(/\s+/g, ' ').trim(); }
 export function turkishReading(text: string): string {
     return text.replace(/sh/g, 'ş').replace(/th/g, 's').replace(/dh/g, 'z').replace(/kh/g, 'h').replace(/gh/g, 'ğ')
         .replace(/ḥ/g, 'h').replace(/ṣ/g, 's').replace(/ḍ/g, 'd').replace(/ṭ/g, 't').replace(/ẓ/g, 'z')

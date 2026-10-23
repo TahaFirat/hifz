@@ -14,7 +14,7 @@
     "db:generate": "drizzle-kit generate",
     "check": "tsc --noEmit",
     "test": "node tests/run.mjs",
-    "data:refresh": "node scripts/fetch-hifz.mjs"
+    "data:refresh": "node --experimental-strip-types scripts/fetch-hifz.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

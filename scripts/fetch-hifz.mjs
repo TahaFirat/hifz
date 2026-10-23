@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import {withTurkishSource} from '../lib/hifz/readings.ts';
 const out = new URL('../lib/hifz/', import.meta.url);
 async function json(url) {
   for (let attempt=0; attempt<3; attempt++) {
@@ -10,6 +11,10 @@ const names='Fâtiha|Bakara|Âl-i İmrân|Nisâ|Mâide|En’âm|A’râf|Enfâl|
 const directory=(await json('https://api.alquran.cloud/v1/surah')).data.map((s,i)=>({id:s.number,name:names[i],arabicName:s.name,verseCount:s.numberOfAyahs,revelation:s.revelationType==='Meccan'?'Mekkî':'Medenî'}));
 if(directory.length!==114 || names.length!==114)throw Error('Incomplete directory');
 await fs.writeFile(new URL('chapters.json',out),JSON.stringify(directory));
+const corpus={};
+const [trSource,mealSource]=await Promise.all(['tr.transliteration','tr.vakfi'].map(async e=>(await json('https://api.alquran.cloud/v1/quran/'+e)).data.surahs));
+for(const s of trSource){corpus[s.number]={};const meal=mealSource.find(m=>m.number===s.number);for(const v of s.ayahs){const m=meal.ayahs.find(a=>a.numberInSurah===v.numberInSurah);if(!v.text||!m?.text)throw Error('Incomplete Turkish source');corpus[s.number][v.numberInSurah]={reading:v.text,meaning:m.text};}}
+await fs.writeFile(new URL('turkish.json',out),JSON.stringify(corpus));
 const ids=[1,2,59,...Array.from({length:22},(_,i)=>93+i)];
 const data={};
 const clean=s=>s.replace(/<[^>]*>/g,'').trim();
@@ -30,6 +35,7 @@ await Promise.all(Array.from({length:3},async()=>{
     console.log(`${id}: ${data[id].verses.length} ayet`);
   }
 }));
+for(const [id,lesson] of Object.entries(data))data[id]=withTurkishSource(lesson,Number(id),corpus[id]);
 await fs.writeFile(new URL('offline.json',out),JSON.stringify(data));
 await fs.mkdir(new URL('../public/fonts/',import.meta.url),{recursive:true});
 for(const [name,url] of [
@@ -39,4 +45,4 @@ for(const [name,url] of [
  ['Manrope-OFL.txt','https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/OFL.txt']]){
  const r=await fetch(url);if(!r.ok)throw Error(`Font ${name}: ${r.status}`);await fs.writeFile(new URL(`../public/fonts/${name}`,import.meta.url),Buffer.from(await r.arrayBuffer()));
 }
-await fs.writeFile(new URL('provenance.json',out),JSON.stringify({retrievedAt:new Date().toISOString(),sources:['https://api.quran.com/api/v4','https://api.alquran.cloud/v1'],chapters:ids,verses:Object.values(data).reduce((n,s)=>n+s.verses.length,0),wordReading:'Deterministic phonetic conversion from Quran.com transliteration; full Turkish reading from AlQuran Cloud.',acikkuran:'DNS resolution failed during initial retrieval.'},null,2));
+await fs.writeFile(new URL('provenance.json',out),JSON.stringify({retrievedAt:new Date().toISOString(),sources:['https://api.quran.com/api/v4','https://api.alquran.cloud/v1'],chapters:ids,verses:Object.values(data).reduce((n,s)=>n+s.verses.length,0),wordReading:'Turkish source transcription; exact phrase alignment or intact full reading. Fatiha independent onsets curated.',acikkuran:'DNS resolution failed during initial retrieval.'},null,2));
