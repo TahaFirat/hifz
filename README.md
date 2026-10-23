@@ -1,0 +1,58 @@
+# Hıfz — Sure & Dua Ezber Atölyesi
+
+React + TypeScript + Tailwind CSS + Lucide. Vinext/Cloudflare Worker sunucusu, anahtarsız Kur’an veri rotası ve isteğe bağlı Gemini rotası.
+
+## Çalıştırma
+
+Node.js 22.13+ gerekir.
+
+```sh
+npm install
+npm run dev
+```
+
+Önizleme: http://127.0.0.1:5173
+
+```sh
+npm run check
+npm test
+npm run build
+npm start
+```
+
+Windows'ta sistem npm sarmalayıcısı yanlış yol seçerse `node "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js" install` kullanılabilir. Uygulamayı doğrudan başlatmak için `node scripts/run-framework.mjs dev`.
+
+## İçerik ve davranış
+
+- 114 surelik eksiksiz dizin; toplam 6236 ayet.
+- 26 temel sure/aşır seçimi, 156 kaynak ayet ve sekiz namaz duası gömülü.
+- Arapça / okunuş / anlam katmanları; beş gizleme seviyesi, kelimeye dokunarak açma, Space ipucu, tümünü aç/gizle ve sıfırlama.
+- Zincirleme ezber: yeni ayet açık, önceki ayetler %50 gizli.
+- Uzun surelerde beşli bölümler, son üç ayet ve 1–20 ayetlik özel aralık.
+- Ayet sesleri: Mişârî Râşid el-Afâsî; tek dinleme ve 3/5 tekrar. Ses akışı internet gerektirir. Dualar için cihazda Arapça konuşma sesi varsa tarayıcı seslendirmesi kullanılır; bu, kârî kaydı değildir.
+- Ezber işaretleri ve indirilen aralıklar localStorage'da kalır. Üretim sürümündeki Service Worker arayüz dosyalarını çevrimdışı saklar; ilk çevrimiçi ziyaret gereklidir.
+
+## Kaynaklar ve doğruluk
+
+- [AlQuran Cloud](https://alquran.cloud/api): tam Arapça metin, Muhammet Abay Türkçe çeviriyazı, Diyanet meali, Afâsî ses adresleri.
+- [Quran.com API](https://api-docs.quran.com/): kelime Arapçaları ve Türkçe anlamları, Diyanet meali (77).
+- [Açık Kuran API](https://github.com/acik-kuran/acikkuran-api): birincil Türkçe kelime kaynağı; güncel `verseparts` rotası kullanılır. İlk canlı kontrolde DNS çözümlenemedi; bu kaynak çalışıyor olarak raporlanmaz.
+- [EveryAyah](https://everyayah.com/): alternatif ayet sesleri.
+
+**Kelime okunuşları**, Açık Kuran erişilemediğinde Quran.com çeviriyazısından otomatik fonetik dönüşümdür; doğrulanmış Türkçe kelime okunuşu olarak sunulmaz. Tam Türkçe okunuş ayrı olarak AlQuran Cloud'dan gelir. Bu kaynak da erişilemezse tam okunuş kelime dönüşümlerinden birleştirilir ve kaynak açıklamasında belirtilir. Kelime servisi eksikse metin yanlış eşleştirilmez; ayet anlamlı tek grup olarak korunur.
+
+Dualar anlam bütünlüğüne göre elle bölünmüş geleneksel metinlerdir. Rabbena dualarının Kur’an karşılıkları Bakara 2:201 ve İbrahim 14:41'dir. Namaz dualarının okunuşları için [Diyanet namaz rehberi](https://namaz.diyanet.gov.tr/) karşılaştırma kaynağıdır. Bu proje dinî metin uzmanı tarafından son redaksiyondan geçirilmiş sayılmaz.
+
+Gömülü veri yenileme: `npm run data:refresh`. Kaynak ve indirme zamanı `lib/hifz/provenance.json` içindedir. Veri kaynaklarının kendi kullanım koşulları geçerlidir. Amiri ve Manrope yazı tiplerinin OFL lisansları `public/fonts/` içinde korunmuştur.
+
+## Gemini
+
+Anahtar tarayıcıya gönderilmez. Sunucuda `GEMINI_API_KEY` tanımlanınca `@google/genai` üzerinden `gemini-2.5-flash` kullanılabilir. Yerelde `.dev.vars` dosyası, Sites üzerinde gizli ortam değişkeni kullanın. `.dev.vars` Git tarafından dışlanır. Model yalnızca seçilmiş en fazla beş ayetin kelime okunuş ve anlamını işler. Arapça metin/sıra kontrol edilir; tam kaynak ayet ve meal değiştirilmez. Sonuç yapay zekâ eşleştirmesi olarak etiketlenir ve localStorage'a kaydedilir. Anahtar verilmediğinde özellik kapalıdır; canlı Gemini testi yapılmamıştır.
+
+## Doğrulama
+
+`npm test`: gizleme, zincirleme, sınırlar, tüm gömülü içerik katmanları ve sağlayıcı başarısızlıkları için 13 test. Sağlayıcı yedekleri fixture ile sınanır; bunlar canlı servis testi değildir.
+
+`node scripts/check-live-bulk.mjs`: dört toplu sürümde 114 sure / 6236 ayet eksiksizliği. Tüm MP3'leri çalmaz. Ayrı sure çağrılarını çok sık yapmak HTTP 429 üretebilir; denetim için toplu çağrıyı tercih edin.
+
+Ayrıntılı gerçekleşen kontroller ve sınırlamalar `VERIFICATION.md` dosyasındadır.
