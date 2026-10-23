@@ -1,14 +1,11 @@
 import type { Lesson, Word, Verse } from './types';
 import { plain } from './core.ts';
+import { alignArabicWords } from './transliteration.ts';
 /** Display the Turkish source transcription; never synthesize it from English. */
 export function readableTurkish(text: string): string {
     const letters: Record<string, string> = { 'ḥ': 'h', 'ṣ': 's', 'ŝ': 's', 'ḍ': 'd', 'ṭ': 't', 'ẓ': 'z', 'ẕ': 'z', 'ż': 'z', 'ḳ': 'k', 'ḫ': 'h', 'ġ': 'ğ', 'ā': 'â', 'ī': 'î', 'ū': 'û', '`': '‘' };
     const clean = text.replace(/[ḥṣŝḍṭẓẕżḳḫġāīū`]/g, c => letters[c]).replace(/-/g, '').replace(/\s+/g, ' ').trim();
     return clean ? clean[0].toLocaleUpperCase('tr') + clean.slice(1) : '';
-}
-function consonants(text: string): string {
-    return readableTurkish(text.toLowerCase().replace(/sh/g, 'ş').replace(/th/g, 's').replace(/dh/g, 'z').replace(/kh/g, 'h').replace(/gh/g, 'ğ').replace(/w/g, 'v'))
-        .toLocaleLowerCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/q/g, 'k').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/[^bcdfghjklmnprstvyz]/g, '');
 }
 // Independent word onsets for Fatiha; connected recitation remains in verse.reading.
 const fatiha: Record<number, string[]> = {
@@ -20,37 +17,9 @@ const fatiha: Record<number, string[]> = {
     6: ['İhdinâ', 'Es-sırâta', 'El-müstekîm'],
     7: ['Sırâta', 'Ellezîne', 'En‘amte', 'Aleyhim', 'Ğayri', 'El-mağdûbi', 'Aleyhim', 'Ve lâ', 'Ed-dâllîn'],
 };
-/** Only split at source phrase boundaries when the entire consonant alignment is exact. */
+/** Preserve the public helper; all output units are now independent Arabic words. */
 export function sourceGroups(words: Word[], reading: string, meaning: string): Word[] {
-    const chunks = reading.trim().split(/\s+/).filter(s => consonants(s));
-    const memo = new Map<string, Word[] | null>();
-    function align(ci: number, wi: number): Word[] | null {
-        if (ci === chunks.length)
-            return wi === words.length ? [] : null;
-        const key = `${ci}:${wi}`;
-        if (memo.has(key))
-            return memo.get(key)!;
-        let joined = '';
-        for (let end = wi; end < words.length; end++) {
-            joined += consonants(words[end].reading);
-            const expected = consonants(chunks[ci]);
-            if (joined === expected) {
-                const rest = align(ci + 1, end + 1);
-                if (rest) {
-                    const group = words.slice(wi, end + 1);
-                    const result = [{ arabic: group.map(w => w.arabic).join(' '), reading: readableTurkish(chunks[ci]), meaning: group.map(w => w.meaning).join(' ') }, ...rest];
-                    memo.set(key, result);
-                    return result;
-                }
-            }
-            if (joined.length > expected.length)
-                break;
-        }
-        memo.set(key, null);
-        return null;
-    }
-    // displayWords keeps the intact source phrase when exact word boundaries are unavailable.
-    return align(0, 0) || words.map(w => ({ ...w, reading: '' }));
+    return alignArabicWords(words, reading, false);
 }
 export function withTurkishSource(lesson: Lesson, chapter: number, source: Record<string, {
     reading: string;
@@ -63,12 +32,12 @@ export function withTurkishSource(lesson: Lesson, chapter: number, source: Recor
             const meaning = plain(row.meaning);
             const isolated = chapter === 1 ? fatiha[v.number] : undefined;
             const nativeTurkish = lesson.source.startsWith('Açık Kuran') && !v.approximate && v.words.every(w => w.reading.trim());
-            const words = isolated?.length === v.words.length ? v.words.map((w, i) => ({ ...w, reading: isolated[i] })) : nativeTurkish ? v.words.map(w => ({...w, reading:readableTurkish(w.reading)})) : sourceGroups(v.words, row.reading, meaning);
+            const independent=alignArabicWords(v.words,row.reading,nativeTurkish);
+            const words = isolated?.length === independent.length ? independent.map((w, i) => ({ ...w, reading: isolated[i],readingSource:'source' as const })) : independent.map(w=>({...w,reading:readableTurkish(w.reading)}));
             return { ...v, reading: readableTurkish(row.reading), meaning, words, approximate: false };
         }) };
 }
-/** Never invent a word reading when the source only supplies a connected phrase. */
+/** Always tokenize the UI, including old cached phrase-based lessons and prayers. */
 export function displayWords(verse: Verse): Word[] {
-    if (verse.words.every(w => w.reading)) return verse.words;
-    return [{ arabic: verse.words.map(w => w.arabic).join(' '), reading: verse.reading, meaning: verse.meaning }];
+    return alignArabicWords(verse.words.length ? verse.words : [{arabic:verse.arabic,reading:'',meaning:''}], verse.reading);
 }

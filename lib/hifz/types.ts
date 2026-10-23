@@ -2,6 +2,7 @@ export type Word = {
     arabic: string;
     reading: string;
     meaning: string;
+    readingSource?: 'source' | 'calculated';
 };
 export type Verse = {
     number: number;

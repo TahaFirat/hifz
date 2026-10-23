@@ -58,5 +58,5 @@ test('native Turkish verseparts survive a different connected source phrase with
     const native=withTurkishSource({...lesson,source:'Açık Kuran · Türkçe kelime'},2,source);
     assert.equal(native.verses[0].words[0].reading,'A');assert.equal(native.verses[0].reading,'Birleşik kaynak.');assert.equal(native.verses[0].meaning,'Kaynak meal');
     const fallback=withTurkishSource({...lesson,source:'Quran.com',verses:[{...verse,approximate:true}]},2,source);
-    assert.equal(fallback.verses[0].words[0].reading,'');
+    assert.ok(fallback.verses[0].words[0].reading);assert.equal(fallback.verses[0].words[0].readingSource,'calculated');
 });

@@ -1,6 +1,6 @@
 import type { Word } from './types';
 
-export type StudyMode = 'standard' | 'chain' | 'quiz';
+export type StudyMode = 'standard' | 'chain' | 'quiz' | 'coach' | 'reverse' | 'bridge';
 export const stages = ['1. Kodlama', '2. Ayet Sonu', '3. Anahtar Kelimeler', '4. Okunuş İpucu', '5. Aktif Hatırlama'];
 export const arabicLetters = (text: string) => text.normalize('NFKC').replace(/[\u064b-\u065f\u0670\u06d6-\u06ed\u0640]/g, '').replace(/ٱ/g, 'ا');
 // Explicit particles, not a morphological classifier. Attached prefixes stay with their word.

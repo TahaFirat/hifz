@@ -2,7 +2,7 @@ import type { Verse } from './types';
 import { shadowDelay } from './learning.ts';
 type Phase = 'listen' | 'pause' | 'check' | null;
 /** Owns every callback and timer so stale sessions cannot restart playback. */
-export function createShadowSession(verse: Verse, repeat: boolean, update: (phase: Phase) => void) {
+export function createShadowSession(verse: Verse, repeat: boolean, update: (phase: Phase) => void, pauseSeconds?:number) {
     let cancelled = false, timer: ReturnType<typeof setTimeout> | undefined, audio: HTMLAudioElement | undefined, utterance: SpeechSynthesisUtterance | undefined;
     let phase: Phase = 'listen', started = 0;
     const releaseAudio = () => {
@@ -22,7 +22,7 @@ export function createShadowSession(verse: Verse, repeat: boolean, update: (phas
         if (cancelled) return;
         if (!repeat || phase === 'check') { finish(); return; }
         phase = 'pause'; update(phase);
-        timer = setTimeout(() => { if (!cancelled) { phase = 'check'; play(); } }, shadowDelay(duration));
+        timer = setTimeout(() => { if (!cancelled) { phase = 'check'; play(); } }, shadowDelay(pauseSeconds ?? duration));
     };
     const play = () => {
         if (cancelled) return;

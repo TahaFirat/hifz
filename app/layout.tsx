@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './responsive.css';
 import './reading.css';
+import './methods.css';
 export const metadata: Metadata = { title: 'Hıfz — Sure & Dua Ezber Atölyesi', description: 'Kelime gizleme, zincirleme ezber ve ayet tekrarıyla sure ve dua çalışın.', manifest: '/manifest.webmanifest', icons: { icon: '/favicon.svg' } };
 export default function RootLayout({ children }: {
     children: React.ReactNode;

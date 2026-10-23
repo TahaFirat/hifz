@@ -27,10 +27,10 @@ test('chain frames learn individual verses before cumulative links, including en
 test('quiz presents exactly three distinct real source words and rotates correct answer', () => {
     for(let seed=0;seed<8;seed++) {const c=choicesFor(words[1],words,seed);assert.equal(c.length,3);assert.equal(new Set(c.map(w=>w.arabic)).size,3);assert.equal(c.filter(w=>w===words[1]).length,1);assert.ok(c.every(w=>words.includes(w)));}
 });
-test('missing word transcription uses the intact canonical phrase inside the tile', () => {
+test('missing word transcription always returns independently aligned word cards', () => {
     const v={number:1,arabic:'أ ب',reading:'Kaynak ifade',meaning:'Meal',words:[{arabic:'أ',reading:'',meaning:''},{arabic:'ب',reading:'',meaning:''}]};
-    assert.deepEqual(displayWords(v),[{arabic:'أ ب',reading:'Kaynak ifade',meaning:'Meal'}]);
-    assert.equal(displayWords({...v,words}),words);
+    assert.deepEqual(displayWords(v).map(w=>[w.arabic,w.reading]),[['أ','Kaynak'],['ب','ifade']]);
+    assert.deepEqual(displayWords({...v,words}).map(w=>w.reading),words.map(w=>w.reading));
 });
 test('shadowing plays, pauses for duration, checks once, and cancels stale timers', async t => {
     const originalAudio=globalThis.Audio;
