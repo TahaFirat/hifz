@@ -3,7 +3,7 @@ import { quranSegments, prayerSegments } from './segments-data.ts';
 
 export type StudyUnit = Verse & {
  id:string; parent:Verse; part:number; total:number; anchor:string;
- boundary:'ayah'|'waqf'|'study'; aligned:boolean;
+ boundary:'ayah'|'waqf'|'study'; aligned:boolean; readingStart?:string;readingEnd?:string;
 };
 type Token={text:string;stop:boolean;forbidden:boolean};
 const letters=/[ء-غف-يٱ]/u;
@@ -24,7 +24,8 @@ export function arabicTokens(arabic:string):Token[] {
 export const arabicWordCount=(text:string)=>arabicTokens(text).length;
 const anchorFrom=(meaning:string,fallback:string)=>meaning.replace(/\([^)]*\)/gu,'').replace(/[!?:;.,“”"()]/gu,'').trim().split(/\s+/u).filter(Boolean).slice(0,3).join(' ')||fallback;
 const ayahAnchors:Record<string,string>={'1:1':'Allah’ın Adıyla','1:2':'Hamd','1:3':'Rahmet','1:4':'Hesap Günü','1:5':'Kulluk ve Yardım','1:6':'Doğru Yol','1:7':'Lütuf Yolu','2:255':'Tevhid','2:285':'İman ve Teslimiyet','2:286':'Dua ve Bağışlanma','59:22':'İlim ve Rahmet','59:23':'Esmâ ve Tevhid','59:24':'Yaratılış ve Tesbih'};
-const whole=(v:Verse,content?:Content):StudyUnit=>({...v,id:String(v.number),parent:v,part:1,total:1,anchor:ayahAnchors[`${content?.chapter}:${v.number}`]||anchorFrom(v.meaning,'Ayet'),boundary:'ayah',aligned:true});
+const connectedCues:Record<string,[string,string]>={'1:1':['Bismillâhi','rahîm.'],'1:3':['Errahmâni','rahîm.'],'1:6':['İhdinâ','müstekîm.']};
+const whole=(v:Verse,content?:Content):StudyUnit=>{const key=`${content?.chapter}:${v.number}`,cues=connectedCues[key];return{...v,id:String(v.number),parent:v,part:1,total:1,anchor:ayahAnchors[key]||anchorFrom(v.meaning,'Ayet'),boundary:'ayah',aligned:true,readingStart:cues?.[0],readingEnd:cues?.[1]}};
 const clauses=(text:string,count:number):string[]=>{
  for(const pattern of [/(?<=[.;!?])\s+/u,/(?<=[,;.!?])\s+/u]){const rows=text.trim().split(pattern).filter(Boolean);if(rows.length===count)return rows}
  return [];
@@ -62,7 +63,8 @@ export function unitCue(unit:StudyUnit,kind:'arabic'|'reading',stage:1|2){
  const text=kind==='arabic'?unit.arabic:unit.reading;
  const parts=kind==='arabic'?arabicTokens(text).map(t=>t.text):text.trim().split(/\s+/u).filter(Boolean);
  if(!parts.length)return{start:'',end:'',masked:true};
- if(kind==='reading'&&parts.length===1){const known=unit.parent.number===1&&/Bismill/u.test(text)?'Bismillâhi':Array.from(text).slice(0,3).join('')+'…';return{start:known,end:'',masked:true}}
+ if(kind==='reading'&&unit.readingStart)return{start:unit.readingStart,end:stage===2?unit.readingEnd||'':'',masked:true};
+ if(kind==='reading'&&parts.length===1)return{start:Array.from(text).slice(0,3).join('')+'…',end:'',masked:true};
  const n=stage===1?Math.min(2,parts.length-1):1;
  return{start:parts.slice(0,n).join(' '),end:stage===2&&parts.length>1?parts.at(-1)!:'',masked:parts.length>(stage===1?n:2)};
 }

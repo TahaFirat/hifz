@@ -25,6 +25,7 @@ test('short verses remain intact and medium verses become exactly two complete p
  }
  const fatiha=splitLongVerseIntoWaqfSegments(offline['1'].verses.find(v=>v.number===7)!,content(1));
  assert.deepEqual(fatiha.map(v=>arabicWordCount(v.arabic)),[4,5]);
+ const short=studyUnits(offline['1'].verses,content(1));assert.equal(unitCue(short.find(v=>v.number===3)!,'reading',1).start,'Errahmâni');assert.equal(unitCue(short.find(v=>v.number===6)!,'reading',1).start,'İhdinâ');
 });
 test('Ayat al-Kursi has nine aligned story stops and retains every source word and sign',()=>{
  const source=offline['2'].verses.find(v=>v.number===255)!;const units=studyUnits([source],content(2));
