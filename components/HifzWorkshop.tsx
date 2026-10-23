@@ -228,7 +228,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
    </section>
    <section className="method-panel" aria-label="Ezber metodu">
     <label htmlFor="method-select">Ezber metodu</label><select id="method-select" className="study-mode" aria-label="Ezber metodu seçici" disabled={!displayReady||restoredKey!==studyKey} value={mode==='chain'?'coach':mode} onChange={e=>changeMode(e.target.value as StudyMode)}>{methods.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}</select>
-    <details key={mode} className="method-info" open><summary>🧠 Bilimsel & Hafızlık Tekniği Nasıl Çalışır?</summary><p>{methods.find(m=>m.id===mode)?.description}</p><p>† Arapçadan hesaplanan yardımcı okunuş. Tecvit ve durak okuyuşunu tilavetten kontrol et.</p></details>
+    <details key={mode} className="method-info"><summary>🧠 Bilimsel & Hafızlık Tekniği Nasıl Çalışır?</summary><p>{methods.find(m=>m.id===mode)?.description}</p><p>† Arapçadan hesaplanan yardımcı okunuş. Tecvit ve durak okuyuşunu tilavetten kontrol et.</p></details>
    </section>
    <section className="memory-panel" aria-label="Ezber kontrolleri">
     <div className="levels" ref={levelBar} aria-label="Gizleme seviyesi">{mode==='standard'&&levels.map(({label,id}) => <button key={id} aria-pressed={!focus && level === id} className={!focus && level === id ? 'current' : ''} onClick={() => {setReverseWords(null);changeStage(id);}}>{label}</button>)}<button className={focus ? 'current' : ''} aria-pressed={focus} onClick={() => {stop(); setFocus(!focus); setReveals({}); setWrong(null);}}>🎯 Zorlandıklarım</button></div>
