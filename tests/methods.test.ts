@@ -9,7 +9,7 @@ import {restoreStudy} from '../lib/hifz/study.ts';
 import {createShadowSession} from '../lib/hifz/shadowing.ts';
 import type {Lesson} from '../lib/hifz/types.ts';
 
-test('all embedded ayahs and all prayers render exactly one card per Arabic word',()=>{
+test('legacy alignment retains one token per Arabic word in embedded ayahs and prayers',()=>{
     const offline=JSON.parse(fs.readFileSync(new URL('../lib/hifz/offline.json',import.meta.url),'utf8')) as Record<string,Lesson>;
     let count=0;
     for(const lesson of [...Object.values(offline),...Object.values(prayers)]) for(const verse of lesson.verses){

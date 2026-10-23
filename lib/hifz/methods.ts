@@ -1,9 +1,9 @@
 export type CoachState={verse:number;phase:'read'|'recall'|'link';count:number;complete:boolean};
 export const initialCoach=():CoachState=>({verse:0,phase:'read',count:0,complete:false});
-export function restoreCoach(value:unknown):CoachState {
+export function restoreCoach(value:unknown,maxUnits=20):CoachState {
     if(!value || typeof value!=='object') return initialCoach();
     const v=value as Partial<CoachState>;
-    return {verse:Number.isInteger(v.verse) && v.verse!>=0 && v.verse!<20?v.verse!:0,phase:v.phase==='recall'||v.phase==='link'?v.phase:'read',count:Number.isInteger(v.count)&&v.count!>=0&&v.count!<=3?Math.min(v.count!,v.phase==='link'?2:3):0,complete:v.complete===true};
+    return {verse:Number.isInteger(v.verse) && v.verse!>=0 && v.verse!<maxUnits?v.verse!:0,phase:v.phase==='recall'||v.phase==='link'?v.phase:'read',count:Number.isInteger(v.count)&&v.count!>=0&&v.count!<=3?Math.min(v.count!,v.phase==='link'?2:3):0,complete:v.complete===true};
 }
 export function advanceCoach(state:CoachState,total:number):CoachState {
     if(!total || state.complete) return state;
@@ -21,18 +21,18 @@ export function reverseFrame(step:number,total:number):number[] {
 export function cueMask(level:number,index:number):boolean {return level===0?false:level===1?index%2===1:true;}
 export function bridgeMask(index:number,count:number):boolean {return index>0&&index<count-1;}
 export const methods=[
-    {id:'list',label:'📜 Tam Liste Görünümü',description:'Ayetleri sırayla gör; ipucunu azaltarak her satırı zihninden tamamla.'},
-    {id:'coach',label:'🕌 Osmanlı Hafızlık Koçu',description:'Her ayeti üç kez yüzünden, üç kez ezberden oku; sonra önceki ayetlerle iki kez bağla.'},
-    {id:'reverse',label:'🔄 Sondan Başa Ayet Zinciri',description:'Son ayetten başla; her adımda bir önceki ayeti ekleyip ezberlediğin bölüme bağla.'},
-    {id:'shadow',label:'🎙️ Semâ & Arz',description:'Tilaveti dinle, dört saniyelik arada ayetin tamamını sesli tekrar et, sonra ikinci dinleyişte kontrol et.'},
+    {id:'list',label:'📜 Duraklı Liste',description:'Kısa ayetleri bütün, uzun metinleri anlamlı bölümler hâlinde çalış.'},
+    {id:'coach',label:'🕌 Hafız Koçu · 3+3',description:'Üç kez bakarak, üç kez ezberden oku; öğrendiğin bölümleri iki kez birbirine bağla.'},
+    {id:'reverse',label:'🔄 Sondan Başa Zincir',description:'Son bölümden başla; her adımda bir öncekini ekleyip öğrendiklerinle birleştir.'},
+    {id:'order',label:'🧩 Sıralama ve Köprü',description:'Karışık seçeneklerden sıradaki ayeti veya durağı seçerek metni tamamla.'},
 ] as const;
 
 export const ayahLevels=[
     {id:0,label:'1. Tam Açık'},
-    {id:1,label:'2. Ayet Başı İpucu'},
+    {id:1,label:'2. Başlangıç İpucu'},
     {id:2,label:'3. Baş ve Son İpucu'},
-    {id:3,label:'4. Sıralı Ayet Testi'},
-    {id:4,label:'5. Tam Gizli'},
+    {id:3,label:'4. Sıralı Test'},
+    {id:4,label:'5. Sadece Anlam Çapası'},
 ] as const;
 
 /** Divide a display line only at whitespace to create one continuous hint and one continuous mask. */

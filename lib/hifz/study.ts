@@ -5,6 +5,13 @@ import {restoreCoach,type CoachState} from './methods.ts';
 export type StudyState = { level: number; mode: StudyMode; step: number; cursor: number; spotlight: boolean; reveals: Record<string, boolean>;coach?:CoachState;reverseWords?:boolean;reverseVerse?:number };
 export const defaultStudy = (): StudyState => ({ level: 0, mode: 'standard', step: 1, cursor: 0, spotlight: false, reveals: {} });
 const integer = (v: unknown, min: number, max: number, fallback: number) => typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max ? v : fallback;
+export type UnitStudyState={schema:4;level:number;mode:'list'|'coach'|'reverse'|'order';step:number;cursor:number;focus:boolean;reveals:Record<string,boolean>;coach:CoachState;split:boolean};
+export function restoreUnitStudy(value:unknown):UnitStudyState {
+ const v=value&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:{};
+ const mode=v.mode==='coach'||v.mode==='reverse'||v.mode==='order'?v.mode:'list';
+ const entries=v.schema===4&&v.reveals&&typeof v.reveals==='object'&&!Array.isArray(v.reveals)?Object.entries(v.reveals).slice(0,4096).filter(([k,val])=>/^\d{1,3}(?:\.\d{1,3})?$/u.test(k)&&typeof val==='boolean'):[];
+ return{schema:4,level:integer(v.level,0,4,0),mode,step:v.schema===4?integer(v.step,1,4096,1):1,cursor:v.schema===4?integer(v.cursor,0,4096,0):0,focus:v.focus===true,reveals:Object.fromEntries(entries),coach:v.schema===4?restoreCoach(v.coach,4096):restoreCoach(null),split:v.split!==false};
+}
 
 export type AyahStudyState={schema:3;level:number;mode:'list'|'coach'|'reverse'|'shadow';step:number;cursor:number;spotlight:boolean;reveals:Record<string,boolean>;coach:CoachState;orderTest:boolean};
 export const defaultAyahStudy=():AyahStudyState=>({schema:3,level:0,mode:'list',step:1,cursor:0,spotlight:false,reveals:{},coach:restoreCoach(null),orderTest:false});
