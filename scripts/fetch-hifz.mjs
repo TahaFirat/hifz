@@ -40,6 +40,8 @@ await fs.writeFile(new URL('offline.json',out),JSON.stringify(data));
 await fs.mkdir(new URL('../public/fonts/',import.meta.url),{recursive:true});
 for(const [name,url] of [
  ['Amiri-Regular.ttf','https://raw.githubusercontent.com/google/fonts/main/ofl/amiri/Amiri-Regular.ttf'],
+ ['NotoNaskhArabic.ttf','https://raw.githubusercontent.com/google/fonts/main/ofl/notonaskharabic/NotoNaskhArabic%5Bwght%5D.ttf'],
+ ['NotoNaskhArabic-OFL.txt','https://raw.githubusercontent.com/google/fonts/main/ofl/notonaskharabic/OFL.txt'],
  ['Manrope.ttf','https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/Manrope%5Bwght%5D.ttf'],
  ['Amiri-OFL.txt','https://raw.githubusercontent.com/google/fonts/main/ofl/amiri/OFL.txt'],
  ['Manrope-OFL.txt','https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/OFL.txt']]){

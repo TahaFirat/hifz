@@ -53,7 +53,9 @@ Anahtar tarayıcıya gönderilmez. Sunucuda `GEMINI_API_KEY` tanımlanınca `@go
 
 ## Doğrulama
 
-`npm test`: gizleme, zincirleme, sınırlar, tüm gömülü içerik katmanları ve sağlayıcı başarısızlıkları için 45 test. Sağlayıcı yedekleri fixture ile sınanır; bunlar canlı servis testi değildir.
+`npm test`: gizleme, zincirleme, sınırlar, Arapça gösterim, tüm gömülü içerik katmanları ve sağlayıcı başarısızlıkları için 47 test. Sağlayıcı yedekleri fixture ile sınanır; bunlar canlı servis testi değildir.
+
+Arapça görünüm, zkr/Huşu projesindeki Noto Naskh Arabic hattıyla ayet akışını korur; ayrı kelime kartları kullanılmaz. Kaynak metne dokunmadan yalnız elif-i vasla (`ٱ`) ekranda sade elif (`ا`) olarak gösterilir. Diğer hareke ve okuma işaretleri korunur. Noto fontu ve OFL lisansı `public/fonts/` içindedir. Arapça ilk harf parçalama yerine Okunuş İpucu yalnız Türkçe okunuş başlangıcını gösterir; Arapça kelime bütün olarak gizlenir. Tam açık ayette kaynak Türkçe okunuş birleşik satır olarak gösterilir.
 
 `node scripts/check-live-bulk.mjs`: dört toplu sürümde 114 sure / 6236 ayet eksiksizliği. Tüm MP3'leri çalmaz. Ayrı sure çağrılarını çok sık yapmak HTTP 429 üretebilir; denetim için toplu çağrıyı tercih edin.
 

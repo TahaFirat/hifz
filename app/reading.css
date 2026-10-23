@@ -1,0 +1,31 @@
+@font-face{font-family:'Noto Naskh Arabic';src:url('/fonts/NotoNaskhArabic.ttf') format('truetype');font-weight:400 700;font-display:swap}
+:root{--arabic-font:'Noto Naskh Arabic','Traditional Arabic',serif}
+/* A verse is a reading surface; complete words remain interactive, without card cells. */
+.verse-card .verse-flow{display:block;direction:rtl;text-align:right;font-family:var(--arabic-font);font-size:calc(48px * var(--scale));font-weight:400;line-height:2.35;padding:5px 2px 0;word-spacing:normal;letter-spacing:normal}
+.verse-flow .word-tile{display:inline-block;position:relative;vertical-align:baseline;min-height:0;max-width:100%;padding:0;margin:0 .04em;border:0;border-bottom:2px solid transparent;border-radius:3px;background:transparent;box-shadow:none;overflow:visible;touch-action:manipulation}
+.verse-flow .word-tile:hover{background:transparent;border-color:transparent}
+.verse-flow .word-content{display:inline;vertical-align:baseline;font:inherit;line-height:inherit;width:auto;min-height:0;padding:0 .04em;border:0;border-radius:3px;background:transparent;direction:rtl;white-space:normal;max-width:100%;color:var(--text)}
+.verse-flow .word-content .word-arabic{display:inline;font-family:var(--arabic-font);font-size:inherit;line-height:inherit;font-weight:400;letter-spacing:normal;font-kerning:normal;font-feature-settings:'rlig' 1,'calt' 1;overflow-wrap:normal;word-break:normal;max-width:100%}
+.verse-flow .word-content:focus-visible{outline-offset:3px}
+.verse-flow .word-tile.difficult{border-bottom-color:var(--gold);box-shadow:none}
+.verse-flow .word-tile.next-word{border-bottom-color:var(--gold);background:color-mix(in srgb,var(--gold) 7%,transparent)}
+.verse-flow .difficulty-dot{position:absolute;top:auto;bottom:-22px;right:calc(50% - 15px);width:30px;height:30px;padding:0;align-items:center;font:20px Manrope,Arial,sans-serif;opacity:0;pointer-events:none;color:var(--muted);z-index:1}
+.verse-flow .word-tile:hover .difficulty-dot,.verse-flow .word-tile:focus-within .difficulty-dot,.verse-flow .word-tile.difficult .difficulty-dot{opacity:.75;pointer-events:auto}
+.verse-flow .difficulty-dot[aria-pressed=true]{color:var(--gold);opacity:1}
+.verse-flow .answer-wrong{border-bottom-color:#df8069}
+.verse-transcription,.reading-flow{font-size:calc(19px * var(--scale));font-weight:450;color:var(--reading);line-height:1.9;margin:12px 0 0;overflow-wrap:anywhere;text-align:left}
+.reading-flow .reading-content{display:inline;color:inherit;font:inherit;line-height:inherit;padding:4px 2px;min-height:44px;max-width:100%;overflow-wrap:anywhere;border-radius:3px}
+.reading-flow .reading-content:disabled{opacity:1}
+.reading-flow .word-reading{display:inline;font:inherit;line-height:inherit;white-space:normal;overflow:visible}
+.verse-card .verse-meaning{margin-top:15px;font-size:calc(20px * var(--scale));line-height:1.8}
+.word-choices[dir=rtl] button{font-family:var(--arabic-font);font-size:32px;font-weight:400;line-height:1.8}
+.verse-card{padding:12px 22px 24px}
+@media(max-width:600px){
+ .verse-card{padding:9px 15px 20px}
+ .verse-card .verse-flow{font-size:calc(34px * var(--scale));line-height:2.45;padding-top:2px}
+ .verse-transcription,.reading-flow{font-size:calc(17px * var(--scale));line-height:1.95;margin-top:10px}
+ .verse-card .verse-meaning{font-size:calc(18px * var(--scale));margin-top:12px}
+ .word-choices[dir=rtl] button{font-size:28px}
+}
+@media(max-width:340px){.verse-card .verse-flow{font-size:calc(32px * var(--scale))}.verse-card{padding-inline:12px}}
+@media(hover:hover){.verse-flow .word-content:hover,.reading-flow .reading-content:hover{color:var(--gold)}}

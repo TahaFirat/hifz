@@ -1,15 +1,16 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Eye, EyeOff, Play, Pause, Repeat2, ArrowRight, RotateCcw, Focus, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import { allChapters, basics, prayerCatalog } from '@/lib/hifz/catalog';
 import { prayers } from '@/lib/hifz/prayers';
 import offlineData from '@/lib/hifz/offline.json';
 import { validRange } from '@/lib/hifz/core';
-import { stages, stageHidden, firstArabic, firstReading, chainFrame, choicesFor, hasArabicVoice, type StudyMode } from '@/lib/hifz/learning';
+import { stages, stageHidden, firstReading, chainFrame, choicesFor, hasArabicVoice, type StudyMode } from '@/lib/hifz/learning';
 import { restoreStudy, lessonSelection } from '@/lib/hifz/study';
 import { requestLesson } from '@/lib/hifz/client';
 import { isLesson, restoreDisplay } from '@/lib/hifz/validation';
+import { displayArabic } from '@/lib/hifz/arabic-display';
 import { displayWords } from '@/lib/hifz/readings';
 import { createShadowSession } from '@/lib/hifz/shadowing';
 import type { Content, Lesson, Verse } from '@/lib/hifz/types';
@@ -240,24 +241,27 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
      <button className={`icon-button ${isPlaying && playing.repeat ? 'active' : ''}`} disabled={!v.audio && !canSpeak} aria-label="Tekrarlı çal" aria-pressed={isPlaying && playing.repeat} onClick={() => play(v, true)}><Repeat2 size={19}/></button>
      <button className="icon-button" aria-label={allOpen ? 'Ayeti gizle' : 'Ayeti aç'} onClick={() => revealVerse(v, !allOpen)}>{allOpen ? <Eye size={19}/> : <EyeOff size={19}/>}</button>
     </div>{pausing && <span className="shadow-cue" role="status">🎙️ Sıra Sende</span>}</div>
-    {(showArabic || showReading) && <div className="word-grid" dir="rtl">{v.words.map((w, wi) => {
-        const h = hidden(v, vi, wi), cue = h && currentStage === 3 && (!focus || pausing);
-        const marked = !!difficult[difficultyKey(v, wi)];
+    {showArabic && <div className="word-grid verse-flow" dir="rtl" lang="ar" aria-label="Ayet metni">{v.words.map((w, wi) => {
+        const h = hidden(v, vi, wi), marked = !!difficult[difficultyKey(v, wi)];
         const active = h && wi === nextWord && (currentStage === 4 || mode === 'quiz');
         const sequential = currentStage === 4 || mode === 'quiz';
-        return <div key={wi} className={`word-tile ${w.arabic.trim().includes(' ') ? 'phrase' : ''} ${marked ? 'difficult' : ''} ${active ? 'next-word' : ''} ${wrong === wordKey(v.number, wi) ? 'answer-wrong' : ''}`}>
+        return <Fragment key={wi}><span className={`word-tile ${marked ? 'difficult' : ''} ${active ? 'next-word' : ''} ${wrong === wordKey(v.number, wi) ? 'answer-wrong' : ''}`}>
             <button className="word-content" aria-label={`${wi + 1}. kelime ${h ? 'aç' : 'gizle'}`} aria-pressed={!h} disabled={pausing || (h && (mode === 'quiz' || (sequential && wi !== nextWord)))} onClick={() => toggle(wordKey(v.number, wi), h)} onDoubleClick={() => { mark(v, wi); toggle(wordKey(v.number, wi), true); }}>
-            {showArabic && <span className={`word-arabic ${h && !cue ? 'blurred' : ''}`} aria-hidden={h && !cue} lang="ar">{cue ? firstArabic(w.arabic) : w.arabic}</span>}
-            {showReading && <span dir="ltr" className={`word-reading ${h && !cue ? 'blurred' : ''}`} aria-hidden={h && !cue}>{cue ? firstReading(w.reading) : w.reading}</span>}
+            <span className={`word-arabic ${h ? 'blurred' : ''}`} aria-hidden={h}>{displayArabic(w.arabic)}</span>
             </button>
-            <button className="difficulty-dot" aria-label={`${wi + 1}. kelime: Zorlandım`} aria-pressed={marked} onClick={() => mark(v, wi)}>•</button>
-        </div>;
+            <button className="difficulty-dot" aria-label={`${wi + 1}. kelime: Zorlandım`} aria-pressed={marked} onClick={() => mark(v, wi)}><svg width="6" height="6" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="2.5" fill="currentColor"/></svg></button>
+        </span>{' '}</Fragment>;
     })}</div>}
+    {showReading && (allOpen ? <p className="verse-transcription" lang="tr">{v.reading}</p> : <p className="reading-flow" dir="ltr" lang="tr">{v.words.map((w, wi) => {
+        const h = hidden(v, vi, wi), cue = h && currentStage === 3 && (!focus || pausing);
+        const sequential = currentStage === 4 || mode === 'quiz';
+        return <Fragment key={wi}><button className="reading-content" aria-label={`${wi + 1}. kelimenin okunuşunu ${h ? 'aç' : 'gizle'}`} aria-pressed={!h} disabled={pausing || (h && (mode === 'quiz' || (sequential && wi !== nextWord)))} onClick={() => toggle(wordKey(v.number, wi), h)} onDoubleClick={() => { mark(v, wi); toggle(wordKey(v.number, wi), true); }}><span className={`word-reading ${h && !cue ? 'blurred' : ''}`} aria-hidden={h && !cue}>{cue ? firstReading(w.reading) : w.reading}</span></button>{' '}</Fragment>;
+    })}</p>)}
     {options.length > 0 && <div className="word-choices" aria-label="Kelime seçenekleri" dir={showArabic ? "rtl" : "ltr"}>{options.map((w, i) => <button key={i} lang={showArabic ? "ar" : "tr"} onClick={() => {
         const id = wordKey(v.number, nextWord), correct = w.arabic === v.words[nextWord].arabic;
         if (correct) { toggle(id, true); setWrong(null); }
         else { setWrong(id); setReveals(prev => ({...prev, [id]: true})); if (!difficult[difficultyKey(v, nextWord)]) mark(v, nextWord); }
-    }}>{showArabic ? w.arabic : w.reading}</button>)}</div>}
+    }}>{showArabic ? displayArabic(w.arabic) : w.reading}</button>)}</div>}
     {showMeaning && <p className="verse-meaning">{v.meaning}</p>}
    </article>;
         })}</div>
