@@ -1,13 +1,14 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Search, Eye, EyeOff, Play, Pause, Repeat2, ArrowRight, RotateCcw, Focus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Eye, EyeOff, Play, Pause, Repeat2, ArrowRight, RotateCcw, Focus, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import { allChapters, basics, prayerCatalog } from '@/lib/hifz/catalog';
 import { prayers } from '@/lib/hifz/prayers';
 import offlineData from '@/lib/hifz/offline.json';
 import { validRange } from '@/lib/hifz/core';
-import { stages, stageHidden, firstArabic, firstReading, chainFrame, choicesFor, type StudyMode } from '@/lib/hifz/learning';
+import { stages, stageHidden, firstArabic, firstReading, chainFrame, choicesFor, hasArabicVoice, type StudyMode } from '@/lib/hifz/learning';
 import { restoreStudy, lessonSelection } from '@/lib/hifz/study';
+import { requestLesson } from '@/lib/hifz/client';
 import { isLesson, restoreDisplay } from '@/lib/hifz/validation';
 import { displayWords } from '@/lib/hifz/readings';
 import { createShadowSession } from '@/lib/hifz/shadowing';
@@ -51,7 +52,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
     const [lesson, setLesson] = useState<Lesson>({ verses: initialVerses, source: initialData?.source || '' }), [loading, setLoading] = useState(initialVerses.length === 0), [failed, setFailed] = useState(false);
     const [playing, setPlaying] = useState<{verse: number; repeat: boolean; phase: 'listen' | 'pause' | 'check'} | null>(null);
     const [difficult, setDifficult] = useState<Record<string, boolean>>({}), [focus, setFocus] = useState(false);
-    const [displayReady, setDisplayReady] = useState(false);
+    const [displayReady, setDisplayReady] = useState(false), [canSpeak, setCanSpeak] = useState(false);
     const [spotlight, setSpotlight] = useState(false), [cursor, setCursor] = useState(0), [restoredKey, setRestoredKey] = useState('');
     const [wrong, setWrong] = useState<string | null>(null);
     const session = useRef<ReturnType<typeof createShadowSession> | null>(null), generation = useRef(0);
@@ -63,6 +64,13 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
         setDisplayReady(true);
     }, []);
     useEffect(() => { if (displayReady) save('hifz:display:v1', {font, arabic: showArabic, reading: showReading, meaning: showMeaning}); }, [displayReady, font, showArabic, showReading, showMeaning]);
+    useEffect(() => {
+        if (!('speechSynthesis' in window)) return;
+        const speech = window.speechSynthesis, refresh = () => setCanSpeak(hasArabicVoice(speech));
+        refresh(); speech.addEventListener('voiceschanged', refresh);
+        return () => speech.removeEventListener('voiceschanged', refresh);
+    }, []);
+    useEffect(() => { if (displayReady && mode === 'quiz' && !showArabic && !showReading) setShowArabic(true); }, [displayReady, mode, showArabic, showReading]);
     const difficultyKey = (v: Verse, wi: number) => selected.kind === 'prayer' ? `prayer:${selected.key}:${v.number}:${wi}` : `quran:${selected.chapter}:${v.number}:${wi}`;
     const mark = (v: Verse, wi: number) => setDifficult(prev => { const next = {...prev}; const key = difficultyKey(v, wi); if(next[key]) delete next[key]; else next[key] = true; save('hifz:difficult:v1', next); return next; });
     const changeMode = (next: StudyMode) => { stop(); setMode(next); setReveals({}); setWrong(null); setFocus(false); setStep(1); if (next === 'quiz') setLevel(4); };
@@ -87,7 +95,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
         setFailed(false);
         setLesson({ verses: [], source: '' });
         setLoading(true);
-        const g = ++generation.current, controller = new AbortController(), cacheKey = `hifz:lesson:v4:${selected.chapter}:${range[0]}:${range[1]}`;
+        const g = ++generation.current, controller = new AbortController(), cacheKey = `hifz:lesson:v5:${selected.chapter}:${range[0]}:${range[1]}`;
         const apply = (l: Lesson) => {
             if (g === generation.current && !controller.signal.aborted) {
                 setLesson({...l, verses: l.verses.map(v => ({...v, words: displayWords(v)}))});
@@ -111,13 +119,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
             }
         }
         catch { }
-        fetch(`/api/lesson?chapter=${selected.chapter}&start=${range[0]}&end=${range[1]}`, { signal: controller.signal }).then(async (r) => {
-            const d = await r.json() as Lesson & {
-                error?: string;
-            };
-            if (!r.ok)
-                throw Error(d.error || 'İçerik yüklenemedi.');
-            if (!isLesson(d, range[0], range[1])) throw Error('Eksik içerik');
+        requestLesson(selected.chapter, range[0], range[1], controller.signal).then(d => {
             if (controller.signal.aborted || g !== generation.current) return;
             save(cacheKey, d);
             apply(d);
@@ -205,7 +207,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
   </header>
   <main className="workspace">
    <section className="library" aria-label="İçerik seçimi">
-    <label className="search"><Search size={18}/><input aria-label="Sure veya dua ara" value={query} onChange={e => setQuery(e.target.value)} placeholder="Ara"/></label>
+    <label className="search"><Search size={18}/><input aria-label="Sure veya dua ara" value={query} onChange={e => setQuery(e.target.value)} placeholder="Ara"/>{query && <button type="button" className="clear-search" aria-label="Aramayı temizle" onClick={e => { setQuery(''); e.currentTarget.parentElement?.querySelector('input')?.focus(); }}><X size={16}/></button>}</label>
     <div className={`chips ${category === 'all' || query ? 'expanded' : ''}`} aria-label="Sureler ve dualar">{filtered.map(c => <button key={c.key} className={`surah-chip ${selected.key === c.key ? 'chosen' : ''}`} aria-pressed={selected.key === c.key} onClick={() => select(c)}>{c.name}</button>)}</div>
     {selected.end - selected.start > 19 && <div className="range-row" aria-label="Ayet aralığı">{Array.from({ length: Math.ceil((selected.end - selected.start + 1) / 5) }, (_, i) => { const s = selected.start + i * 5, e = Math.min(s + 4, selected.end); return <button key={s} className={range[0] === s && range[1] === e ? 'selected' : ''} onClick={() => setRange([s, e])}>{s}–{e}</button>; })}<button onClick={() => setRange([selected.end - 2, selected.end])}>Son 3</button><button onClick={() => { setCustom(!custom); setDraft(range.map(String)); }}>Özel</button></div>}
     {custom && <form className="custom-form" onSubmit={e => {
@@ -219,7 +221,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
    </section>
    <section className="memory-panel" aria-label="Ezber kontrolleri">
     <div className="levels" ref={levelBar} aria-label="Gizleme seviyesi">{levels.map((label, i) => <button key={label} disabled={mode === 'chain'} aria-pressed={mode !== 'chain' && !focus && level === i} className={mode !== 'chain' && !focus && level === i ? 'current' : ''} onClick={() => changeStage(i)}>{label}</button>)}<button className={focus ? 'current' : ''} aria-pressed={focus} onClick={() => {stop(); setFocus(!focus); setReveals({}); setWrong(null);}}>🎯 Zorlandıklarım</button></div>
-    <div className="view-toggles" aria-label="Görünüm">{[{ label: 'Arapça', show: showArabic, set: setShowArabic }, { label: 'Okunuş', show: showReading, set: setShowReading }, { label: 'Meal', show: showMeaning, set: setShowMeaning }].map(t => <button key={t.label} aria-pressed={t.show} disabled={t.show && [showArabic, showReading, showMeaning].filter(Boolean).length === 1} onClick={() => t.set(!t.show)}><span className={`toggle ${t.show ? 'on' : ''}`}/>{t.label}</button>)}</div>
+    <div className="view-toggles" aria-label="Görünüm">{[{ label: 'Arapça', show: showArabic, set: setShowArabic }, { label: 'Okunuş', show: showReading, set: setShowReading }, { label: 'Meal', show: showMeaning, set: setShowMeaning }].map(t => <button key={t.label} aria-pressed={t.show} disabled={t.show && ([showArabic, showReading, showMeaning].filter(Boolean).length === 1 || (mode === 'quiz' && t.label !== 'Meal' && [showArabic, showReading].filter(Boolean).length === 1))} onClick={() => t.set(!t.show)}><span className={`toggle ${t.show ? 'on' : ''}`}/>{t.label}</button>)}</div>
    </section>
    <div className="lesson-bar"><h1 className="lesson-title">{selected.name}</h1><div className="lesson-tools">
     {spotlight && mode !== 'chain' && <nav className="focus-navigation" aria-label="Ayetler"><button className="icon-button" aria-label="Önceki ayet" disabled={loading || current === 0} onClick={() => moveVerse(-1)}><ChevronLeft size={19}/></button><button className="icon-button" aria-label="Sonraki ayet" disabled={loading || current >= lesson.verses.length - 1} onClick={() => moveVerse(1)}><ChevronRight size={19}/></button></nav>}
@@ -231,11 +233,11 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
             const allOpen = v.words.every((_, wi) => !hidden(v, vi, wi)), isPlaying = playing?.verse === v.number;
             const nextWord = v.words.findIndex((_, wi) => hidden(v, vi, wi));
             const currentStage = stageFor(vi, v), pausing = isPlaying && playing.phase === 'pause';
-            const options = mode === 'quiz' && nextWord >= 0 && !pausing ? choicesFor(v.words[nextWord], pool, v.number + nextWord) : [];
+            const options = mode === 'quiz' && nextWord >= 0 && !pausing ? choicesFor(v.words[nextWord], pool, v.number + nextWord, !showArabic) : [];
             return <article className="verse-card" key={`${selected.key}:${v.number}`} aria-label={`${v.number}. ayet`}>
     <div className="verse-header"><span className="verse-number">{v.number}</span><div className="verse-actions">
-     <button className={`icon-button ${isPlaying && !playing.repeat ? 'active' : ''}`} aria-label={isPlaying && !playing.repeat ? 'Durdur' : 'Dinle'} onClick={() => play(v)}>{isPlaying && !playing.repeat ? <Pause size={18}/> : <Play size={18}/>}</button>
-     <button className={`icon-button ${isPlaying && playing.repeat ? 'active' : ''}`} aria-label="Tekrarlı çal" aria-pressed={isPlaying && playing.repeat} onClick={() => play(v, true)}><Repeat2 size={19}/></button>
+     <button className={`icon-button ${isPlaying && !playing.repeat ? 'active' : ''}`} disabled={!v.audio && !canSpeak} aria-label={isPlaying && !playing.repeat ? 'Durdur' : 'Dinle'} onClick={() => play(v)}>{isPlaying && !playing.repeat ? <Pause size={18}/> : <Play size={18}/>}</button>
+     <button className={`icon-button ${isPlaying && playing.repeat ? 'active' : ''}`} disabled={!v.audio && !canSpeak} aria-label="Tekrarlı çal" aria-pressed={isPlaying && playing.repeat} onClick={() => play(v, true)}><Repeat2 size={19}/></button>
      <button className="icon-button" aria-label={allOpen ? 'Ayeti gizle' : 'Ayeti aç'} onClick={() => revealVerse(v, !allOpen)}>{allOpen ? <Eye size={19}/> : <EyeOff size={19}/>}</button>
     </div>{pausing && <span className="shadow-cue" role="status">🎙️ Sıra Sende</span>}</div>
     {(showArabic || showReading) && <div className="word-grid" dir="rtl">{v.words.map((w, wi) => {
@@ -251,11 +253,11 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey, i
             <button className="difficulty-dot" aria-label={`${wi + 1}. kelime: Zorlandım`} aria-pressed={marked} onClick={() => mark(v, wi)}>•</button>
         </div>;
     })}</div>}
-    {options.length > 0 && <div className="word-choices" aria-label="Kelime seçenekleri" dir="rtl">{options.map((w, i) => <button key={i} lang="ar" onClick={() => {
+    {options.length > 0 && <div className="word-choices" aria-label="Kelime seçenekleri" dir={showArabic ? "rtl" : "ltr"}>{options.map((w, i) => <button key={i} lang={showArabic ? "ar" : "tr"} onClick={() => {
         const id = wordKey(v.number, nextWord), correct = w.arabic === v.words[nextWord].arabic;
         if (correct) { toggle(id, true); setWrong(null); }
         else { setWrong(id); setReveals(prev => ({...prev, [id]: true})); if (!difficult[difficultyKey(v, nextWord)]) mark(v, nextWord); }
-    }}>{w.arabic}</button>)}</div>}
+    }}>{showArabic ? w.arabic : w.reading}</button>)}</div>}
     {showMeaning && <p className="verse-meaning">{v.meaning}</p>}
    </article>;
         })}</div>

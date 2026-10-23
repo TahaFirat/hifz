@@ -37,7 +37,7 @@ export function createShadowSession(verse: Verse, repeat: boolean, update: (phas
             current.onerror = () => { if (audio === current) finish(); };
             void current.play().catch(() => { if (audio === current) finish(); });
         } else if (typeof speechSynthesis !== 'undefined') {
-            const voice = speechSynthesis.getVoices().find(v => v.lang.startsWith('ar'));
+            const voice = speechSynthesis.getVoices().find(v => /^ar(?:-|$)/i.test(v.lang));
             if (!voice) { finish(); return; }
             const current = new SpeechSynthesisUtterance(verse.arabic); utterance = current; current.voice = voice; current.rate = .8;
             current.onend = () => {

@@ -49,8 +49,7 @@ export function sourceGroups(words: Word[], reading: string, meaning: string): W
         memo.set(key, null);
         return null;
     }
-    // Keep Arabic word masking intact; the UI shows the intact Turkish source below
-    // whenever its phrase boundaries cannot be matched without guessing.
+    // displayWords keeps the intact source phrase when exact word boundaries are unavailable.
     return align(0, 0) || words.map(w => ({ ...w, reading: '' }));
 }
 export function withTurkishSource(lesson: Lesson, chapter: number, source: Record<string, {
@@ -63,7 +62,8 @@ export function withTurkishSource(lesson: Lesson, chapter: number, source: Recor
                 throw Error('Türkçe kaynak eksik');
             const meaning = plain(row.meaning);
             const isolated = chapter === 1 ? fatiha[v.number] : undefined;
-            const words = isolated?.length === v.words.length ? v.words.map((w, i) => ({ ...w, reading: isolated[i] })) : sourceGroups(v.words, row.reading, meaning);
+            const nativeTurkish = lesson.source.startsWith('Açık Kuran') && !v.approximate && v.words.every(w => w.reading.trim());
+            const words = isolated?.length === v.words.length ? v.words.map((w, i) => ({ ...w, reading: isolated[i] })) : nativeTurkish ? v.words.map(w => ({...w, reading:readableTurkish(w.reading)})) : sourceGroups(v.words, row.reading, meaning);
             return { ...v, reading: readableTurkish(row.reading), meaning, words, approximate: false };
         }) };
 }

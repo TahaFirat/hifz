@@ -25,11 +25,14 @@ export function chainFrame(step: number, count: number) {
         ? { indices: [newest], levels: [0], last }
         : { indices: Array.from({ length: newest + 1 }, (_, i) => i), levels: Array.from({ length: newest + 1 }, (_, i) => i === newest ? 1 : 3), last };
 }
-export function choicesFor(correct: Word, pool: Word[], seed: number): Word[] {
-    const key = (w: Word) => arabicLetters(w.arabic);
+export function choicesFor(correct: Word, pool: Word[], seed: number, readingOnly = false): Word[] {
+    const key = (w: Word) => readingOnly ? w.reading.trim().toLocaleLowerCase('tr') : arabicLetters(w.arabic);
     const unique = [...new Map(pool.filter(w => key(w) !== key(correct)).map(w => [key(w), w])).values()];
     // Stable, distinct source words; rotate the correct answer's position.
     const others = unique.length ? [unique[seed % unique.length], unique[(seed + Math.max(1, Math.floor(unique.length / 2))) % unique.length]].filter((w, i, a) => a.findIndex(x => key(x) === key(w)) === i) : [];
     const result = [...others.slice(0, 2)]; result.splice(seed % (result.length + 1), 0, correct); return result;
 }
 export const shadowDelay = (seconds: number) => Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 4000;
+export function hasArabicVoice(speech?: Pick<SpeechSynthesis, 'getVoices'>) {
+    try { return !!speech?.getVoices().some(v => /^ar(?:-|$)/i.test(v.lang)); } catch { return false; }
+}
