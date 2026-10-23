@@ -1,12 +1,13 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Search, Eye, EyeOff, Play, Pause, Repeat2, ArrowRight, RotateCcw } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Search, Eye, EyeOff, Play, Pause, Repeat2, ArrowRight, RotateCcw, Focus, ChevronLeft, ChevronRight } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import { allChapters, basics, prayerCatalog } from '@/lib/hifz/catalog';
 import { prayers } from '@/lib/hifz/prayers';
 import offlineData from '@/lib/hifz/offline.json';
 import { validRange } from '@/lib/hifz/core';
 import { stages, stageHidden, firstArabic, firstReading, chainFrame, choicesFor, type StudyMode } from '@/lib/hifz/learning';
+import { restoreStudy, lessonRange } from '@/lib/hifz/study';
 import { displayWords } from '@/lib/hifz/readings';
 import { createShadowSession } from '@/lib/hifz/shadowing';
 import type { Content, Lesson, Verse } from '@/lib/hifz/types';
@@ -28,32 +29,44 @@ const save = (key: string, value: unknown) => {
 };
 const wordKey = (v: number, w: number | string) => `${v}:${w}`;
 const norm = (s: string) => s.toLocaleLowerCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
-export default function HifzWorkshop({ initialCategory = 'basics', initialKey }: {
+export default function HifzWorkshop({ initialCategory = 'basics', initialKey, initialStart, initialEnd: requestedEnd }: {
     initialCategory?: string;
     initialKey?: string;
+    initialStart?: string;
+    initialEnd?: string;
 }) {
     const initialList = initialCategory === 'prayers' ? prayerCatalog : initialCategory === 'all' ? allChapters : basics;
     const initialContent = initialList.find(c => c.key === initialKey) || initialList[0];
-    const initialEnd = initialContent.end - initialContent.start > 19 ? initialContent.start + 4 : initialContent.end;
+    const initialRange = lessonRange(initialStart, requestedEnd, initialContent);
+    const initialEnd = initialRange[1];
     const initialData = prayers[initialContent.key] || offline[initialContent.chapter];
-    const initialVerses = initialData?.verses.filter(v => v.number >= initialContent.start && v.number <= initialEnd).map(v => ({...v, words: displayWords(v)})) || [];
+    const initialVerses = useMemo(() => initialData?.verses.filter(v => v.number >= initialRange[0] && v.number <= initialEnd).map(v => ({...v, words: displayWords(v)})) || [], [initialData, initialRange[0], initialEnd]);
     const [category, setCategory] = useState(initialCategory), [selected, setSelected] = useState<Content>(initialContent), [query, setQuery] = useState('');
     const [level, setLevel] = useState(0), [mode, setMode] = useState<StudyMode>('standard'), [step, setStep] = useState(1);
     const [showArabic, setShowArabic] = useState(true), [showReading, setShowReading] = useState(true), [showMeaning, setShowMeaning] = useState(true), [font, setFont] = useState(0);
     const [reveals, setReveals] = useState<Record<string, boolean>>({}), [range, setRange] = useState<[
         number,
         number
-    ]>([initialContent.start, initialEnd]), [custom, setCustom] = useState(false), [draft, setDraft] = useState(['1', '5']);
+    ]>(initialRange), [custom, setCustom] = useState(false), [draft, setDraft] = useState(['1', '5']);
     const [lesson, setLesson] = useState<Lesson>({ verses: initialVerses, source: initialData?.source || '' }), [loading, setLoading] = useState(initialVerses.length === 0), [failed, setFailed] = useState(false);
     const [playing, setPlaying] = useState<{verse: number; repeat: boolean; phase: 'listen' | 'pause' | 'check'} | null>(null);
     const [difficult, setDifficult] = useState<Record<string, boolean>>({}), [focus, setFocus] = useState(false);
+    const [displayReady, setDisplayReady] = useState(false);
+    const [spotlight, setSpotlight] = useState(false), [cursor, setCursor] = useState(0), [restoredKey, setRestoredKey] = useState('');
     const [wrong, setWrong] = useState<string | null>(null);
     const session = useRef<ReturnType<typeof createShadowSession> | null>(null), generation = useRef(0);
+    const levelBar = useRef<HTMLDivElement>(null);
     const stop = useCallback(() => { session.current?.cancel(); session.current = null; setPlaying(null); }, []);
     useEffect(() => { try { const d = JSON.parse(read('hifz:difficult:v1') || '{}'); if (d && typeof d === 'object' && !Array.isArray(d)) setDifficult(d); } catch {} }, []);
+    useEffect(() => {
+        try { const p = JSON.parse(read('hifz:display:v1') || 'null'); if (p && typeof p === 'object') { setFont([0,1,2].includes(p.font) ? p.font : 0); if (typeof p.arabic === 'boolean') setShowArabic(p.arabic); if (typeof p.reading === 'boolean') setShowReading(p.reading); if (typeof p.meaning === 'boolean') setShowMeaning(p.meaning); } } catch {}
+        setDisplayReady(true);
+    }, []);
+    useEffect(() => { if (displayReady) save('hifz:display:v1', {font, arabic: showArabic, reading: showReading, meaning: showMeaning}); }, [displayReady, font, showArabic, showReading, showMeaning]);
     const difficultyKey = (v: Verse, wi: number) => selected.kind === 'prayer' ? `prayer:${selected.key}:${v.number}:${wi}` : `quran:${selected.chapter}:${v.number}:${wi}`;
     const mark = (v: Verse, wi: number) => setDifficult(prev => { const next = {...prev}; const key = difficultyKey(v, wi); if(next[key]) delete next[key]; else next[key] = true; save('hifz:difficult:v1', next); return next; });
-    useEffect(() => { stop(); setReveals({}); setWrong(null); setFocus(false); setStep(1); if (mode === 'quiz') setLevel(4); }, [mode, stop]);
+    const changeMode = (next: StudyMode) => { stop(); setMode(next); setReveals({}); setWrong(null); setFocus(false); setStep(1); if (next === 'quiz') setLevel(4); };
+    const studyKey = `hifz:study:v1:${selected.key}:${range[0]}:${range[1]}`;
     useEffect(() => {
         if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').then(() => navigator.serviceWorker.ready).then(reg => { reg.active?.postMessage({ type: 'CACHE_ASSETS', urls: performance.getEntriesByType('resource').map(r => r.name).filter(url => new URL(url).origin === location.origin && /\.(js|css|ttf|svg)(\?|$)/.test(url)) }); }).catch(() => { });
@@ -107,19 +120,32 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey }:
         });
         return () => controller.abort();
     }, [selected, range, stop]);
-    useEffect(() => { save('hifz:last-lesson:v1', { key: selected.key, name: selected.name, category }); }, [selected, category]);
+    useEffect(() => {
+        let saved: unknown = null; try { saved = JSON.parse(read(studyKey) || 'null'); } catch {}
+        const state = restoreStudy(saved);
+        setLevel(state.level); setMode(state.mode); setStep(state.step); setCursor(state.cursor); setSpotlight(state.spotlight); setReveals(state.reveals); setFocus(false); setWrong(null); setRestoredKey(studyKey);
+    }, [studyKey]);
+    useEffect(() => { if (restoredKey === studyKey) save(studyKey, {level, mode, step, cursor, spotlight, reveals}); }, [restoredKey, studyKey, level, mode, step, cursor, spotlight, reveals]);
+    useEffect(() => {
+        const bar = levelBar.current, active = bar?.querySelector<HTMLElement>('.current');
+        if (bar && active) bar.scrollLeft += active.getBoundingClientRect().left - bar.getBoundingClientRect().left - 8;
+    }, [level, focus]);
+    useEffect(() => { save('hifz:last-lesson:v1', { key: selected.key, name: selected.name, category, range }); }, [selected, category, range]);
     const catalog = category === 'basics' ? basics : category === 'prayers' ? prayerCatalog : allChapters;
     const filtered = catalog.filter(c => norm(c.name).includes(norm(query)) || (query.trim() !== '' && String(c.chapter) === query.trim()));
     const frame = chainFrame(step, lesson.verses.length);
-    const visible = mode === 'chain' ? frame.indices.map(i => lesson.verses[i]).filter(Boolean) : lesson.verses;
+    const current = Math.min(cursor, Math.max(0, lesson.verses.length - 1));
+    const visible = mode === 'chain' ? frame.indices.map(i => lesson.verses[i]).filter(Boolean) : spotlight ? lesson.verses.slice(current, current + 1) : lesson.verses;
+    const masks = useMemo(() => new Map(lesson.verses.map(v => [v.number, Array.from({length: 5}, (_, stage) => v.words.map((_, wi) => stageHidden(stage, v.words, wi)))])), [lesson]);
+    const moveVerse = (delta: number) => { stop(); setWrong(null); setCursor(Math.max(0, Math.min(lesson.verses.length - 1, current + delta))); };
     const stageFor = (vi: number, v: Verse) => playing?.verse === v.number && playing.phase === 'pause' ? 3 : mode === 'chain' ? frame.levels[vi] : level;
     const hidden = (v: Verse, vi: number, wi: number) => {
         if (playing?.verse === v.number && playing.phase === 'pause') return true;
         const id = wordKey(v.number, wi);
         if (reveals[id] !== undefined) return !reveals[id];
-        return focus ? !!difficult[difficultyKey(v, wi)] : stageHidden(stageFor(vi, v), v.words, wi);
+        return focus ? !!difficult[difficultyKey(v, wi)] : (masks.get(v.number)?.[stageFor(vi, v)]?.[wi] ?? false);
     };
-    const pool = [...lesson.verses.flatMap(v => v.words), ...offline['1'].verses.flatMap(v => v.words)];
+    const pool = useMemo(() => [...lesson.verses.flatMap(v => v.words), ...offline['1'].verses.flatMap(v => v.words)], [lesson]);
     const toggle = (id: string, h: boolean) => setReveals(prev => ({ ...prev, [id]: h }));
     const select = (c: Content) => { stop(); setSelected(c); setRange([c.start, c.end - c.start > 19 ? c.start + 4 : c.end]); setQuery(''); setCustom(false); };
     const changeCategory = (c: string) => { setCategory(c); select((c === 'basics' ? basics : c === 'prayers' ? prayerCatalog : allChapters)[0]); };
@@ -136,14 +162,17 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey }:
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             const el = e.target as HTMLElement;
-            if (e.code === 'Space' && !e.repeat && !['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) && !el.isContentEditable) {
+            if (e.code === 'Space' && !e.repeat && !['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(el.tagName) && !el.isContentEditable) {
                 e.preventDefault();
                 hint();
             }
+            if (spotlight && mode !== 'chain' && ['ArrowLeft', 'ArrowRight'].includes(e.key) && !['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(el.tagName) && !el.isContentEditable) { e.preventDefault(); moveVerse(e.key === 'ArrowRight' ? 1 : -1); }
             if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)) {
                 e.preventDefault();
-                document.querySelector<HTMLInputElement>('.search input')?.focus();
+                setSpotlight(false);
+                requestAnimationFrame(() => document.querySelector<HTMLInputElement>('.search input')?.focus());
             }
+            if (e.key === 'Escape' && spotlight) setSpotlight(false);
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
@@ -153,7 +182,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey }:
         stop(); session.current = createShadowSession(v, repeat, phase => setPlaying(phase ? {verse: v.number, repeat, phase} : null));
     };
     const changeStage = (i: number) => { stop(); setLevel(i); setReveals({}); setWrong(null); setFocus(false); if (i === 0) { setShowArabic(true); setShowReading(true); setShowMeaning(true); } };
-    return <div className={`app font-size-${font}`}>
+    return <div className={`app font-size-${font} ${spotlight ? 'spotlight' : ''}`}>
   <header className="topbar">
    <a className="brand" href="/" aria-label="Hıfz ana sayfa">hıfz<span>.</span></a>
    <nav className="category-nav" aria-label="İçerik kategorisi">
@@ -161,7 +190,7 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey }:
    </nav>
    <div className="header-tools">
     <button className="font-button" aria-label="Yazıyı büyüt" onClick={() => setFont((font + 1) % 3)}>A+</button>
-    <select className="study-mode" aria-label="Çalışma modu" value={mode} onChange={e => setMode(e.target.value as StudyMode)}><option value="standard">Standart</option><option value="chain">⛓️ Zincirleme</option><option value="quiz">🧩 Boşluk Doldur</option></select>
+    <select className="study-mode" aria-label="Çalışma modu" value={mode} onChange={e => changeMode(e.target.value as StudyMode)}><option value="standard">Standart</option><option value="chain">⛓️ Zincirleme</option><option value="quiz">🧩 Boşluk Doldur</option></select>
     <ThemeToggle />
    </div>
   </header>
@@ -180,10 +209,13 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey }:
             }}><input aria-label="Başlangıç" type="number" required min={selected.start} max={selected.end} value={draft[0]} onChange={e => setDraft([e.target.value, draft[1]])}/><span>–</span><input aria-label="Bitiş" type="number" required min={Math.max(selected.start, Number(draft[0]))} max={Math.min(selected.end, Number(draft[0]) + 19)} value={draft[1]} onChange={e => setDraft([draft[0], e.target.value])}/><button className="icon-button" aria-label="Aralığı seç"><ArrowRight size={19}/></button></form>}
    </section>
    <section className="memory-panel" aria-label="Ezber kontrolleri">
-    <div className="levels" aria-label="Gizleme seviyesi">{levels.map((label, i) => <button key={label} aria-pressed={level === i} className={level === i ? 'current' : ''} onClick={() => changeStage(i)}>{label}</button>)}<button className={focus ? 'current' : ''} aria-pressed={focus} onClick={() => {stop(); setFocus(!focus); setReveals({}); setWrong(null);}}>🎯 Zorlandıklarım</button></div>
+    <div className="levels" ref={levelBar} aria-label="Gizleme seviyesi">{levels.map((label, i) => <button key={label} aria-pressed={!focus && level === i} className={!focus && level === i ? 'current' : ''} onClick={() => changeStage(i)}>{label}</button>)}<button className={focus ? 'current' : ''} aria-pressed={focus} onClick={() => {stop(); setFocus(!focus); setReveals({}); setWrong(null);}}>🎯 Zorlandıklarım</button></div>
     <div className="view-toggles" aria-label="Görünüm">{[{ label: 'Arapça', show: showArabic, set: setShowArabic }, { label: 'Okunuş', show: showReading, set: setShowReading }, { label: 'Meal', show: showMeaning, set: setShowMeaning }].map(t => <button key={t.label} aria-pressed={t.show} onClick={() => t.set(!t.show)}><span className={`toggle ${t.show ? 'on' : ''}`}/>{t.label}</button>)}</div>
    </section>
-   <h1 className="lesson-title">{selected.name}</h1>
+   <div className="lesson-bar"><h1 className="lesson-title">{selected.name}</h1><div className="lesson-tools">
+    {spotlight && mode !== 'chain' && <nav className="focus-navigation" aria-label="Ayetler"><button className="icon-button" aria-label="Önceki ayet" disabled={loading || current === 0} onClick={() => moveVerse(-1)}><ChevronLeft size={19}/></button><button className="icon-button" aria-label="Sonraki ayet" disabled={loading || current >= lesson.verses.length - 1} onClick={() => moveVerse(1)}><ChevronRight size={19}/></button></nav>}
+    <button className={`icon-button ${spotlight ? 'active' : ''}`} aria-label="Odak görünümü" aria-pressed={spotlight} title="Odak" onClick={() => { stop(); setSpotlight(!spotlight); }}><Focus size={20}/></button>
+   </div></div>
    {loading && <div className="loading" role="status" aria-label="Yükleniyor"><span /><span /><span /></div>}
    {failed && <div className="retry"><button className="icon-button" aria-label="Yeniden dene" onClick={() => setRange([...range])}><RotateCcw size={22}/></button></div>}
    <div className="verse-list">{visible.map((v, vi) => {
@@ -202,9 +234,9 @@ export default function HifzWorkshop({ initialCategory = 'basics', initialKey }:
         const marked = !!difficult[difficultyKey(v, wi)];
         const active = h && wi === nextWord && (currentStage === 4 || mode === 'quiz');
         const sequential = currentStage === 4 || mode === 'quiz';
-        return <div key={wi} className={`word-tile ${marked ? 'difficult' : ''} ${active ? 'next-word' : ''} ${wrong === wordKey(v.number, wi) ? 'answer-wrong' : ''}`}>
+        return <div key={wi} className={`word-tile ${w.arabic.trim().includes(' ') ? 'phrase' : ''} ${marked ? 'difficult' : ''} ${active ? 'next-word' : ''} ${wrong === wordKey(v.number, wi) ? 'answer-wrong' : ''}`}>
             <button className="word-content" aria-label={`${wi + 1}. kelime ${h ? 'aç' : 'gizle'}`} aria-pressed={!h} disabled={pausing || (h && (mode === 'quiz' || (sequential && wi !== nextWord)))} onClick={() => toggle(wordKey(v.number, wi), h)} onDoubleClick={() => { mark(v, wi); toggle(wordKey(v.number, wi), true); }}>
-            {showArabic && <span className={`word-arabic ${h && !cue ? 'blurred' : ''}`} aria-hidden={h && !cue} lang="ar">{cue ? firstArabic(w.arabic) + '…' : w.arabic}</span>}
+            {showArabic && <span className={`word-arabic ${h && !cue ? 'blurred' : ''}`} aria-hidden={h && !cue} lang="ar">{cue ? firstArabic(w.arabic) : w.arabic}</span>}
             {showReading && <span dir="ltr" className={`word-reading ${h && !cue ? 'blurred' : ''}`} aria-hidden={h && !cue}>{cue ? firstReading(w.reading) : w.reading}</span>}
             </button>
             <button className="difficulty-dot" aria-label={`${wi + 1}. kelime: Zorlandım`} aria-pressed={marked} onClick={() => mark(v, wi)}>•</button>

@@ -1,0 +1,91 @@
+/* Intrinsic sizing keeps long source phrases and controls inside their own region. */
+html{scrollbar-gutter:stable;scroll-padding-top:130px}
+body{min-width:280px}
+.topbar{grid-template-columns:auto minmax(0,1fr) auto;gap:18px}
+.category-nav{justify-content:center;min-width:0}
+.header-tools{min-width:0}
+.workspace,.library,.memory-panel,.verse-list,.verse-card,.word-grid{min-width:0}
+.workspace{padding-bottom:max(40px,env(safe-area-inset-bottom))}
+.library{grid-template-columns:minmax(0,1fr) minmax(110px,180px)}
+.chips,.range-row,.levels{overscroll-behavior-inline:contain;scrollbar-width:none;scroll-padding-inline:8px}
+.chips::-webkit-scrollbar,.range-row::-webkit-scrollbar,.levels::-webkit-scrollbar{display:none}
+.levels{gap:4px;padding:2px 0}
+.levels button{min-height:44px}
+.view-toggles{gap:20px;flex-wrap:wrap;justify-content:center}
+.view-toggles button{min-height:44px}
+.study-mode{min-height:44px;max-width:180px}
+.font-button,.theme-toggle,.verse-actions .icon-button,.lesson-tools .icon-button{min-width:44px;min-height:44px;width:44px;height:44px}
+.surah-chip,.range-row button{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.lesson-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 12px;min-width:0}
+.lesson-bar .lesson-title{margin:0;overflow-wrap:anywhere}
+.lesson-tools,.focus-navigation{display:flex;align-items:center;flex-shrink:0;gap:2px}
+.lesson-tools .icon-button.active{color:var(--gold);background:var(--active)}
+.word-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(155px * var(--scale))),1fr));gap:10px}
+.word-tile{min-height:0;max-width:none;touch-action:manipulation}
+.word-tile.phrase{grid-column:1/-1}
+.word-content{padding:19px 16px 14px;min-height:calc(123px * var(--scale))}
+.word-content .word-arabic{font-size:calc(42px * var(--scale));line-height:1.8}
+.word-content .word-reading{font-size:calc(18px * var(--scale));line-height:1.55}
+.difficulty-dot{top:0;right:0;width:44px;height:44px;display:flex;align-items:flex-start;justify-content:center;padding-top:2px;font-size:22px}
+.word-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.word-choices button{min-width:0;overflow-wrap:anywhere;padding:8px;font-size:27px;line-height:1.6;min-height:52px}
+.verse-header{flex-wrap:wrap;row-gap:0;margin-bottom:8px}
+.shadow-cue{white-space:nowrap}
+.verse-meaning{overflow-wrap:anywhere}
+.loading{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+.spotlight .library{display:none}
+.spotlight .verse-list{max-width:920px;margin-inline:auto}
+.spotlight .lesson-bar{max-width:920px;margin-inline:auto}
+.entry-card,.quick-links,.resume-link{min-width:0}
+.quick-links{flex-wrap:wrap}
+.resume-link>span{min-width:0;overflow-wrap:anywhere}
+.custom-form{flex-wrap:wrap;justify-content:flex-start}
+@media(hover:hover){.word-tile:hover{border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}}
+@media(max-width:900px){
+ .topbar{height:auto;min-height:66px;grid-template-columns:auto minmax(0,1fr);padding:8px 20px;gap:2px 14px}
+ .category-nav{grid-column:2;grid-row:1;justify-content:flex-end}
+ .header-tools{grid-column:1/-1;justify-self:end;gap:5px}
+ .category-nav button{min-height:44px;padding:7px 12px;font-size:12px}
+}
+@media(max-width:600px){
+ html{scroll-padding-top:125px}
+ .topbar{padding-inline:max(12px,env(safe-area-inset-left));gap:2px 10px}
+ .topbar .brand{font-size:30px}
+ .category-nav{gap:0}
+ .category-nav button{padding-inline:10px}
+ .header-tools{gap:5px}
+ .workspace{padding:12px max(12px,env(safe-area-inset-left)) max(30px,env(safe-area-inset-bottom))}
+ .library{grid-template-columns:minmax(0,1fr);gap:9px;margin-bottom:10px}
+ .search{grid-column:1;grid-row:1;min-height:44px;padding-inline:9px;border:1px solid var(--line);border-radius:7px;background:var(--surface)}
+ .search input{font-size:16px}
+ .chips{grid-row:2;padding-bottom:3px;gap:6px}
+ .chips.expanded{max-height:150px}
+ .surah-chip{font-size:12px;padding:7px 12px}
+ .range-row{grid-row:3}
+ .custom-form{grid-row:4}
+ .memory-panel{padding:5px 0;gap:0}
+ .levels button{font-size:11px;padding-inline:10px}
+ .view-toggles{gap:22px}
+ .view-toggles button{font-size:11px}
+ .lesson-bar{margin:14px 0 10px}
+ .lesson-bar .lesson-title{font-size:20px}
+ .verse-card{padding:8px 10px 16px}
+ .verse-header{gap:8px}
+ .word-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .word-content{padding:21px 8px 12px;min-height:calc(118px * var(--scale))}
+ .word-content .word-arabic{font-size:calc(37px * var(--scale))}
+ .word-content .word-reading{font-size:calc(17px * var(--scale))}
+ .word-choices button{font-size:24px;padding:7px 5px}
+ .verse-meaning{font-size:calc(18px * var(--scale));line-height:1.8;margin-top:14px}
+ .shadow-cue{font-size:11px}
+ .home-content{padding-inline:20px}
+}
+@media(max-width:340px){
+ .category-nav button{font-size:11px;padding-inline:8px}
+ .view-toggles{gap:15px}
+ .word-content .word-arabic{font-size:calc(34px * var(--scale))}
+ .font-size-2 .word-grid{grid-template-columns:minmax(0,1fr)}
+ .lesson-tools{gap:0}
+}
+@media(max-height:500px) and (orientation:landscape){.memory-panel{position:static}.topbar{min-height:0}.home-content{min-height:0;padding-top:25px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
