@@ -1,0 +1,14 @@
+/* One font preference for verse cards, ordering choices and source disclosures. */
+.app{--ayah-base:clamp(30px,5vw,44px);--reading-base:20px;--meaning-base:18px}
+.app.font-size-0{--scale:1}.app.font-size-1{--scale:1.2}.app.font-size-2{--scale:1.4}
+.app .ayah-arabic{font-size:calc(var(--ayah-base) * var(--scale))}
+.app .ayah-reading{font-size:calc(var(--reading-base) * var(--scale))}
+.app .ayah-meaning{font-size:calc(var(--meaning-base) * var(--scale))}
+.app .order-options{--ayah-base:28px;--reading-base:17px}
+.font-controls{display:flex;align-items:center;gap:2px}
+.font-controls output{min-width:40px;text-align:center;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.font-controls .font-button{width:40px;min-width:40px;min-height:44px;touch-action:manipulation}
+.font-controls .font-button:disabled{opacity:.35;cursor:default}
+@media(max-width:800px){.app{--ayah-base:clamp(30px,7vw,40px);--meaning-base:17px}.app .order-options{--ayah-base:30px;--reading-base:18px}}
+@media(max-width:600px){.font-controls .font-button{width:44px;min-width:44px}}
+@media(max-width:360px){.app{--ayah-base:30px}.font-controls output{min-width:35px}}
