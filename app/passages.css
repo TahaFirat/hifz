@@ -1,0 +1,5 @@
+.passage-title-reference{display:block;margin-top:5px;font-size:12px;color:var(--muted);font-weight:400;letter-spacing:0}
+.chips.expanded{align-content:flex-start;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.chips.expanded::-webkit-scrollbar{display:block;width:5px}
+.chips.expanded::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+.chips.expanded:empty::after{content:'Sonuç bulunamadı';font-size:13px;color:var(--muted);padding:12px}

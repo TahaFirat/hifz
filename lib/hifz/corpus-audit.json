@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-24T08:16:41.726Z",
+  "corpusSha256": "d25331deafc23b3835388bf60e4b34d3362736124f429ab86bbe2e4424792d48",
+  "scope": "Exact source-data comparison, not a linguistic or theological certification.",
+  "results": [
+    {
+      "edition": "tr.transliteration",
+      "source": "https://api.alquran.cloud/v1/quran/tr.transliteration",
+      "checked": 6236,
+      "exactMatches": 6236,
+      "exceptions": []
+    },
+    {
+      "edition": "tr.vakfi",
+      "source": "https://api.alquran.cloud/v1/quran/tr.vakfi",
+      "checked": 6236,
+      "exactMatches": 6235,
+      "exceptions": [
+        {
+          "id": "2:286",
+          "reference": "https://webdosyasp.diyanet.gov.tr/muftuluk/UserFiles/istanbul/Ilceler/sultangazi/UserFiles/Files/KONULARINA%20G%C3%96RE%20AS%CC%A7R-I%20S%CC%A7ERI%CC%87FLER%20Mealli_2126e0c3-81b9-429f-9d2d-9387ce2457f7.pdf",
+          "localLength": 423,
+          "upstreamLength": 347
+        }
+      ]
+    }
+  ]
+}

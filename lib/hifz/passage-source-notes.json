@@ -1,0 +1,7 @@
+{
+ "2:286": {
+  "meaningSha256":"bf653a10c082b25fde4f182366b7687242ce232d444ed9e3b9a1c0e5d9830438",
+  "reference":"https://webdosyasp.diyanet.gov.tr/muftuluk/UserFiles/istanbul/Ilceler/sultangazi/UserFiles/Files/KONULARINA%20G%C3%96RE%20AS%CC%A7R-I%20S%CC%A7ERI%CC%87FLER%20Mealli_2126e0c3-81b9-429f-9d2d-9387ce2457f7.pdf",
+  "note":"AlQuran Cloud tr.vakfi currently truncates 2:286 after 'Bizi bağışla.'. Keep the existing complete Vakıf translation. The final petitions were checked against the Diyanet-published EZBERLENECEK AŞR-I ŞERİFLER document (Bakara/284–286). Punctuation differs between editions. Never automatically replace this complete text with the truncated API response."
+ }
+}

@@ -1,0 +1,8 @@
+'use client';
+import {useState} from 'react';
+import VoicePractice from './VoicePractice';
+import type {Rating,Review} from '@/lib/hifz/progress';
+export default function VerseReview({name,verse,record,onRate,onStopReference,referencePlaying,storageError,onChallenge}:{name:string;verse:number;record?:Review;onRate:(rating:Rating)=>void;onStopReference:()=>void;referencePlaying:boolean;storageError:boolean;onChallenge?:()=>void}){
+ const [open,setOpen]=useState(false);
+ return <details className="verse-review" onToggle={e=>setOpen(e.currentTarget.open)}><summary>{name} · {verse}. ayet <span>Çalışmam {record?'✓':'+'}</span></summary>{open&&<><div className="review-ratings" role="group" aria-label={`${verse}. ayet ezber durumum`}>{[{id:'again',label:'Tekrar'},{id:'learning',label:'Öğreniyorum'},{id:'solid',label:'Sağlam'}].map(x=><button key={x.id} aria-pressed={record?.rating===x.id} onClick={()=>onRate(x.id as Rating)}>{x.label}</button>)}</div>{record&&<small className="next-review">Sonraki tekrar: {new Date(record.due).toLocaleString('tr',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</small>}{record?.verifiedAt&&record.rating==='solid'&&<small className="next-review">İpuçsuz sınandı · {new Date(record.verifiedAt).toLocaleDateString('tr')}</small>}{onChallenge&&<button className="challenge-entry" onClick={onChallenge}>Sağlamlığını sına →</button>}{record?.rating==='solid'&&!record.verifiedAt&&!onChallenge&&<small className="next-review">İpuçsuz sınama sonraki gün açılır.</small>}{storageError&&<p role="status">Çalışman bu cihazda kaydedilemedi. Tarayıcı depolamasını kontrol et.</p>}<VoicePractice onStopReference={onStopReference} referencePlaying={referencePlaying}/></>}</details>;
+}

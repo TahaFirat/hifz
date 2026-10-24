@@ -42,5 +42,13 @@
       "tr.vakfi"
     ],
     "retrievedAt": "2026-10-23T13:29:42.155Z"
-  }
+  },
+  "passages": {
+    "catalog": "passages.json",
+    "verification": "passage-provenance.json",
+    "corpusAudit": "corpus-audit.json",
+    "readySelections": 13,
+    "verifiedAyahs": 43
+  },
+  "currentEmbeddedVerses": 193
 }

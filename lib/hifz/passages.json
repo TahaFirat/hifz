@@ -1,0 +1,201 @@
+[
+  {
+    "key": "k255",
+    "name": "Âyetel Kürsî",
+    "chapter": 2,
+    "start": 255,
+    "end": 255,
+    "kind": "surah",
+    "aliases": [
+      "ayetel kursi",
+      "ayetelkursi",
+      "ayetul kursi"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/kuran?sure=2&ayet=255"
+  },
+  {
+    "key": "k285",
+    "name": "Âmenerrasûlü",
+    "chapter": 2,
+    "start": 285,
+    "end": 286,
+    "kind": "surah",
+    "aliases": [
+      "amenerrasulu",
+      "amenarrasulu",
+      "amenerresulu",
+      "amener rasulu",
+      "bakara son iki ayet",
+      "bakara son 2 ayet"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/kuran?sure=2&ayet=285"
+  },
+  {
+    "key": "h22",
+    "name": "Hüvallahüllezi",
+    "chapter": 59,
+    "start": 22,
+    "end": 24,
+    "kind": "surah",
+    "aliases": [
+      "huvallahullezi",
+      "huvallahullezi la ilahe illa hu",
+      "hasr son uc ayet",
+      "hasr son 3 ayet"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/kuran?sure=59&ayet=22"
+  },
+  {
+    "key": "b1",
+    "name": "Elif Lâm Mîm",
+    "chapter": 2,
+    "start": 1,
+    "end": 5,
+    "kind": "surah",
+    "aliases": [
+      "elif lam mim",
+      "eliflammim",
+      "bakara ilk bes ayet",
+      "bakara ilk 5 ayet"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/kuran?sure=2&ayet=1"
+  },
+  {
+    "key": "n31",
+    "name": "İnnelil Müttekîn",
+    "chapter": 78,
+    "start": 31,
+    "end": 40,
+    "kind": "surah",
+    "aliases": [
+      "innelil muttakin",
+      "innelil muttegin",
+      "innelil muttekin",
+      "inne lil muttakine mefaza",
+      "nebe son on ayet",
+      "nebe son 10 ayet",
+      "amme son on ayet",
+      "İnne lil-müttakîne"
+    ],
+    "reference": "https://dijital.diyanet.gov.tr/Izle/mealli-asr-i-serifler/o-goklerin-yerin-ve-ikisi-arasinda-bulunanlarin-rabbidir-nebe-suresi-31-40-ayetler-asir-ve-meali?id=5018"
+  },
+  {
+    "key": "d51",
+    "name": "İnnel Müttekîn",
+    "chapter": 44,
+    "start": 51,
+    "end": 59,
+    "kind": "surah",
+    "aliases": [
+      "innel muttakin",
+      "innel muttekin",
+      "innel muttakine fi mekamin emin",
+      "duhan son dokuz ayet",
+      "duhan son 9 ayet",
+      "İnnel-müttakîne"
+    ],
+    "reference": "https://dijital.diyanet.gov.tr/Izle/mealli-asr-i-serifler/rabbin-onlari-cehennem-azabindan-da-koruyacak-duhan-suresi-51-59-ayetler-asir-ve-meali?id=4598"
+  },
+  {
+    "key": "t128",
+    "name": "Lekad Câeküm",
+    "chapter": 9,
+    "start": 128,
+    "end": 129,
+    "kind": "surah",
+    "aliases": [
+      "lekad caekum",
+      "lekad caekum rasulun",
+      "tevbe son iki ayet",
+      "tevbe son 2 ayet"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/tefsir/sure/9/ayet/128?kaynak=1"
+  },
+  {
+    "key": "h21",
+    "name": "Lev Enzelnâ",
+    "chapter": 59,
+    "start": 21,
+    "end": 24,
+    "kind": "surah",
+    "aliases": [
+      "lev enzelna",
+      "lev enzelna hazel kurane",
+      "hasr son dort ayet",
+      "hasr son 4 ayet"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/kuran?sure=59&ayet=21"
+  },
+  {
+    "key": "h20",
+    "name": "Lâ Yestevî",
+    "chapter": 59,
+    "start": 20,
+    "end": 24,
+    "kind": "surah",
+    "aliases": [
+      "la yestevi",
+      "la yestevi ashabun nar",
+      "hasr son bes ayet",
+      "hasr son 5 ayet"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/kuran?sure=59&ayet=20"
+  },
+  {
+    "key": "a26",
+    "name": "Kulillâhümme",
+    "chapter": 3,
+    "start": 26,
+    "end": 27,
+    "kind": "surah",
+    "aliases": [
+      "kulillahumme",
+      "kul allahumme malikel mulk",
+      "al i imran 26 27"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/kuran?sure=3&ayet=26"
+  },
+  {
+    "key": "f27",
+    "name": "Lekad Sadakallâh",
+    "chapter": 48,
+    "start": 27,
+    "end": 29,
+    "kind": "surah",
+    "aliases": [
+      "lekad sadakallah",
+      "fetih son uc ayet",
+      "fetih son 3 ayet"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/kuran?sure=48&ayet=27"
+  },
+  {
+    "key": "m115",
+    "name": "Efehasibtüm",
+    "chapter": 23,
+    "start": 115,
+    "end": 118,
+    "kind": "surah",
+    "aliases": [
+      "efehasibtum",
+      "efahasibtum",
+      "muminun son dort ayet",
+      "muminun son 4 ayet"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/kuran?sure=23&ayet=115"
+  },
+  {
+    "key": "f29",
+    "name": "Muhammedün Resûlullah",
+    "chapter": 48,
+    "start": 29,
+    "end": 29,
+    "kind": "surah",
+    "aliases": [
+      "muhammedun resulullah",
+      "muhammedur resulullah",
+      "fetih son ayet"
+    ],
+    "reference": "https://kuran.diyanet.gov.tr/kuran?sure=48&ayet=29"
+  }
+]

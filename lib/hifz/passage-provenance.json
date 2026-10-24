@@ -1,0 +1,352 @@
+{
+  "retrievedAt": "2026-10-24T08:13:12.646Z",
+  "comparison": "Arabic base letters compared across Quran.com and AlQuran Cloud; source reading and meaning compared exactly. This is data-integrity verification, not scholarly certification.",
+  "verses": [
+    {
+      "id": "2:1",
+      "arabicSha256": "9665d84c525598e3faa11637e53f0c2dc6d8dfc7aa6522eb96a742822eef65b8",
+      "readingSha256": "14e3ff4d80209589f2d5a33d2687aa17c876f81ed832475d08b783cd5f56af6e",
+      "meaningSha256": "b72751d17dc374e0140b335291a4b86202fee764233571fafe2e2e4932be5e32",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/2:1?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/2/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "2:2",
+      "arabicSha256": "5d9fdbf423d4759bfb1781fd1043209b994972c8c986d0dd124029581b18a6ce",
+      "readingSha256": "7b4ca1502bf4d154142255757208de28f6b2442ccf7c2359af2641cadc3e04ab",
+      "meaningSha256": "cb2334cf3036cf28465a7a8c7ecd2f25f10ef8997673554966e06c861fb4610c",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/2:2?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/2/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "2:3",
+      "arabicSha256": "f1730c532e41b8849c57a24c1d7ae4bbd7e744d159fc4d9185bab08450063dda",
+      "readingSha256": "a341b7c06ae55d3248dbb1764311709cff9240a139880cbe42a79e735c0fc4fc",
+      "meaningSha256": "e11a92be6ffb5bc074fbf3d118169d55453cec87d83e164b30eba836168b46c9",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/2:3?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/2/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "2:4",
+      "arabicSha256": "c7f1f857a1ff3a3e0c0418e780b04dd8b5116a09fe2604ee4659f128bcba0b0a",
+      "readingSha256": "6b65ceeeab92564e9614bcecf47411a42d6105ed0e9ce91bbe4957dbdb641ed1",
+      "meaningSha256": "62f725e45da93ee28a937594a5085583c4b4f8e243c64bd4469ce74eb7049d18",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/2:4?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/2/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "2:5",
+      "arabicSha256": "f0f7e8629f821fde0e7d8a4bd3fa32da61fdf71fd8a8bb5db374bcc9ac8c9dd9",
+      "readingSha256": "cce55dd9d011cf5ea774be4debb93f91c42607312b23e2ad231fca2f261dba0e",
+      "meaningSha256": "22e51c376842fe2a25c36c559575204c63cd05f666c20cb1c2927d358db54737",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/2:5?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/2/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "2:255",
+      "arabicSha256": "b9df95c39facc0ece12b846e3b5b73d892328ae785ad8736b52e79992d641e23",
+      "readingSha256": "159c4d027a977d12357dfd08166f8a9cc19a2d897bac9c07b886aff73de43836",
+      "meaningSha256": "895c722d11077ebeecfa5322b640c92193ed3743ee8aafb484df9a3f44b65857",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/2:255?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/2/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "2:285",
+      "arabicSha256": "551ba4e9b6b1561b4de9567ef3d9ecb4703ed25debc466f29e19cf741f33f5a2",
+      "readingSha256": "41562463f5c1bf76cec570cf5216468d4c85a10b5481494faefe31b613971f29",
+      "meaningSha256": "37fe6da37591c028cf2ff9691501d3cd46f6f92cc9596f0edcef19e578c0de79",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/2:285?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/2/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "2:286",
+      "arabicSha256": "add334b31b0faafd22f5061e6eedc625b0164a7cac6071ecc8548090c55a519e",
+      "readingSha256": "e2da66ecb12cdc417d66411198060b6e1bf0fcc90bd6c3e37aba1ae1e312d663",
+      "meaningSha256": "bf653a10c082b25fde4f182366b7687242ce232d444ed9e3b9a1c0e5d9830438",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/2:286?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/2/editions/quran-uthmani,tr.transliteration,tr.vakfi",
+      "translationReference": "https://webdosyasp.diyanet.gov.tr/muftuluk/UserFiles/istanbul/Ilceler/sultangazi/UserFiles/Files/KONULARINA%20G%C3%96RE%20AS%CC%A7R-I%20S%CC%A7ERI%CC%87FLER%20Mealli_2126e0c3-81b9-429f-9d2d-9387ce2457f7.pdf",
+      "note": "AlQuran Cloud tr.vakfi currently truncates 2:286 after 'Bizi bağışla.'. Keep the existing complete Vakıf translation. The final petitions were checked against the Diyanet-published EZBERLENECEK AŞR-I ŞERİFLER document (Bakara/284–286). Punctuation differs between editions. Never automatically replace this complete text with the truncated API response."
+    },
+    {
+      "id": "59:20",
+      "arabicSha256": "3722c99e794f66a6dcf81bd58b755e31b1a4ddf605a01e03add19f054497075e",
+      "readingSha256": "efe8260a7800c1c42551d4dfc86ca3b5133ea1e71b20c51b7feb72eedfea3046",
+      "meaningSha256": "a4412b1f65003b2703c995b54a49745da62f46e5eecbbe8d76f4cd6e802d92df",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/59:20?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/59/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "59:21",
+      "arabicSha256": "6ef9b0be7ddc7543b633d45e283645c4307a6a0840901fdd5180f683a495006f",
+      "readingSha256": "7f694dc51e096aed00b91c4bb7406e19688e855354f53e57772420fe9b747de7",
+      "meaningSha256": "3af9a1f1c5f50083c4133d4e1dcb66883cc44e11ec501d9cd12678d3c1968bf7",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/59:21?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/59/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "59:22",
+      "arabicSha256": "0f3dff1b9f4f6eae55fe1df8a0a400581b488617fe1319f5b4f48610a4de59dc",
+      "readingSha256": "f096d73287877846e8329a0d5d4b611b0566d475445d7d9373e8c8e82cf0133a",
+      "meaningSha256": "18cf84cbb0f100a0812bd3fd5963d634bc5bb7622ae322918550bee54e28a419",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/59:22?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/59/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "59:23",
+      "arabicSha256": "4357f9baa2c12bd70ed9126d0231cf6d10d3e7a3e8520fb30f1955b68459c3e1",
+      "readingSha256": "34777d59ea4a3382ec4765e74c84f76ce6778e5045e0f0dbd792861397ab3071",
+      "meaningSha256": "f974f76782d96f9975fc075d3d4223fd4aa8caf7a387ff87e2ef68dee2972fe6",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/59:23?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/59/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "59:24",
+      "arabicSha256": "3b9edfe0687fcca173919bec9bac2a0d38c1dce374d81919f193c8873f940467",
+      "readingSha256": "dfe41fd2e912e0338a8a98b16721df258b2b3c2291289429ab2894ca650236ba",
+      "meaningSha256": "7c63d1fbaf3c399fe86de5e17470601b94f86cd8b333898b3f7a1ccb833c6aa5",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/59:24?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/59/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "78:31",
+      "arabicSha256": "8ff4658ea733ef98353912463c0495b8dbe924c4d3472d0fb69df273deac46f0",
+      "readingSha256": "027f82e96e54552f1f0d046a6cb2a97077e4228fdfee764776c422a8a5cb6afe",
+      "meaningSha256": "2015867fa69ab7f74f9775f816953c673da262f335ee9ff5855508ab088cc79f",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/78:31?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/78/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "78:32",
+      "arabicSha256": "7b63715ca7e3f53438241a03f8c9e953036dd678b77dabd2302bcbf7e730af6b",
+      "readingSha256": "2de5ade55d0c0344127c212d56334bced2b46e4ce5547b008e0e9cf0faa9d06e",
+      "meaningSha256": "8e1f35d0187215e903089c956284daba197eb1c7a796587a41676da0785b48b6",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/78:32?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/78/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "78:33",
+      "arabicSha256": "56c1971e774b472f2b631e02a79500830e98735e2467a28d3ad314686f797d42",
+      "readingSha256": "e5a9c2e6b9d02005817fed0271c6e1c828e501b78f41377657cbb3dca8316d59",
+      "meaningSha256": "9d68b0b06aefad63a1707924c5fed9cf54cfcbe97350d03637d4c131ecde5926",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/78:33?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/78/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "78:34",
+      "arabicSha256": "b79bfc6f335f5c530cdee36915f14faebec6be13066a9038fbfb9a2baf344831",
+      "readingSha256": "ea8748064eb20fc3836efca719697b62051b3620f46e9948091f6276c644463b",
+      "meaningSha256": "1158a36116ec9a7b287f5ec43391c55c93c3b9999b9146a3116f3135008022ab",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/78:34?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/78/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "78:35",
+      "arabicSha256": "40990aa91651448be6673f57d8d6f066e0ea2bb71f04cda81877c22e8aef3fa2",
+      "readingSha256": "b77c52905e2d158700858b2420a58427eb4d330c2eb1a2a33cff350760e8f443",
+      "meaningSha256": "86f7999cb07121a300ed7a64821ce73f350343310f8c808d008ab09685f5a96d",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/78:35?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/78/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "78:36",
+      "arabicSha256": "98282dc00bfbeab65a5859d66171f1426ad53ea7bda4cba80e3ba2e12a37c33c",
+      "readingSha256": "a8e166cd286e01cf2a4b68a1e159816502c1b04a676d6c2a7d989dd09cf16b13",
+      "meaningSha256": "7992c9227dbb164fe869f3c88f1148d83e3117292f7783cc57b7377d73c3ebef",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/78:36?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/78/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "78:37",
+      "arabicSha256": "833d1760f50f54725d1007ca551d913daf83df5652e2f9a737b39c9e3974c891",
+      "readingSha256": "9a8f75d2e6efae7bcfed061be68c132102c36872ec3d43b6144db73fefacbbb2",
+      "meaningSha256": "bb6fccdcbf4919d57027cfdf3b88105c06803bd1d987aee5f46ed06d066b09af",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/78:37?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/78/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "78:38",
+      "arabicSha256": "f20eae8b87a249b0462836e1b7f17e2e6afbf96796facc5f1c8fbf5df4c27877",
+      "readingSha256": "55a07fb25e312f013458685003cc0ff5ff1b43951942423e1c5d7af7534e8b16",
+      "meaningSha256": "2c76d1cb038efb6e96b45861f99071150b5e54949c0e5246db575ed7b379ae4d",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/78:38?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/78/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "78:39",
+      "arabicSha256": "9eeb5aa6c469276c9fabb4f668afcf4d962d7d7566a8a816f20b88e867b11ce1",
+      "readingSha256": "c788ba2e043e88e18bcae108f94f4c44de5fe9d2cec24d21ea4f3c449fe5f524",
+      "meaningSha256": "ac29fce7a91b62919dfcac779499253a6e17f07dcaa7de27606cd9467c4832f7",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/78:39?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/78/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "78:40",
+      "arabicSha256": "073c4e22e5944b9c49b941796afc818016aed2b6e079a85319b8b0bff0ec7c8b",
+      "readingSha256": "3ba398b1f22a21591894d249ad7495c1de09dd7d4de767169d043c9ba9581da1",
+      "meaningSha256": "52c312977230109a60df29d373c4066f4ad739af5e4c6f18520666e82e348986",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/78:40?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/78/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "44:51",
+      "arabicSha256": "bc66e1742fbec5a80953bfb483df4f52dd40a240ecd752bb14b14786a3d3ee56",
+      "readingSha256": "265a27e86270b08bf5b233725859e8b56f2c9a0544662826a692c8a81a365bd4",
+      "meaningSha256": "963bf72d30b3e6528d223878c3cf25127ba553527e3e700d7bc6f9465f796d50",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/44:51?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/44/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "44:52",
+      "arabicSha256": "57022bc03d9b4f7596dd4740d8d17a441a32306ba712bb2094ecab8dcbf6aaf6",
+      "readingSha256": "6e3a4da256538fa124f2458853b254be87f0b8b14e23c1346a6cdbc6e5c38f15",
+      "meaningSha256": "86066cf9e23de5c92b7eb86e0fb96a98e2728f31fccbc6f4f815ef5744cba5c6",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/44:52?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/44/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "44:53",
+      "arabicSha256": "74795449d7c9611839a2e001d590b63246672ebacc971e2b6c0e63700f4e1dac",
+      "readingSha256": "bb2495504e61a065536f039f74a0233f2364633b74a8ef9fbad01c4e18dfd1f9",
+      "meaningSha256": "aa4fba76129d8f42d998d6b26c360a32c0d85acb504da2d42bd4f22776188b5a",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/44:53?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/44/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "44:54",
+      "arabicSha256": "f9487e42df10fca62781fdacccbff3d7f4015f58617aa4bcd082ee29b5440984",
+      "readingSha256": "b9e3e9ca34121e4602b2b73415ac2a4e997df9d411e3415d2e3a8df2c1c73eaf",
+      "meaningSha256": "06f398becd142cc04f317169633841436eafdbd3ea5902fcb333094c44b4dc76",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/44:54?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/44/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "44:55",
+      "arabicSha256": "9f0fa9e4d92384b6056176b9abdd9c661db647a2be58a224b9184ff6a90e19c0",
+      "readingSha256": "05f04902901b4bccac328e278d3b655815ecbd35924cb72fa76fe71c1c50a7a9",
+      "meaningSha256": "8df41d964d471679de30913a004ed0a2519874ba1eac65167478ea0291499420",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/44:55?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/44/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "44:56",
+      "arabicSha256": "5d1338583e7d74948654f605ce61400a0d4a238029b2ed65e8497516afa0a2d8",
+      "readingSha256": "41a408abf2d63ee34fc6068d16ce1f4df520b1fa4048e7f910912dcc352b50a4",
+      "meaningSha256": "a16e60ab43bd2e1864e673d7ec7aa05b07745ceac763ac9a01f6b4420eca08ec",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/44:56?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/44/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "44:57",
+      "arabicSha256": "e5eca068fa68228f93cde09ebc680c54e83d1fae36cc319e4f96d522e65c1e8d",
+      "readingSha256": "e0dd5e24d1332c533d2d8687456178625b97adfa53e13507f6701ae91919d6b3",
+      "meaningSha256": "c0aa6c97d2a98803cfed63be3a7dfed24deafc9e7ab76ed4a79a8a33ab79ba35",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/44:57?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/44/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "44:58",
+      "arabicSha256": "94cec3d25a49f7b4cd75f6be6b2b0bcd9c865afd8214e985f304adcaee9dce7d",
+      "readingSha256": "1414a8f0f0ac8c94092fc32f5a56e44917c498f0fa8b19e6bd903cfcbace014d",
+      "meaningSha256": "ca8e66207db0c2051075ce10063ea7eb0ea907dedeb98a38dbdb63be8b92ddf0",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/44:58?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/44/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "44:59",
+      "arabicSha256": "e0b966935bf69f98602bd7c3c33f3e6d14a1e53e00e67ffccf8473d99b64aed2",
+      "readingSha256": "a4b001f5b35584676062e968adf27929fb14e4b504d030adbd08e6746f7ba6b9",
+      "meaningSha256": "4728970ca82e3573bdac2842b303ef9355c76f64633ff182ba7712852dcd9b84",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/44:59?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/44/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "9:128",
+      "arabicSha256": "b5e59ac9ed25370a6bb55e9cb99a503d9c308147677c661fc7762ecdf808591e",
+      "readingSha256": "18c99db34904e4e20387061841951afb686c18b6afe49b8848c5dbda6cfed8a8",
+      "meaningSha256": "7a0e861f556933a3b2659b873c48a815b02c137bcca20eacde2fbf1166131249",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/9:128?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/9/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "9:129",
+      "arabicSha256": "44dfb89a8473c07a9226645c1bf56f44f0e915f81cc103d4cac8a50ddac94481",
+      "readingSha256": "c885a163de7d745b7f529208b6f392847fbc6b7df413cfd2974cd84727a820a5",
+      "meaningSha256": "27cbd0837eb30c5359891ecb59f97c25db9069d769c4933f6cc7bcca770c33f9",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/9:129?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/9/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "3:26",
+      "arabicSha256": "490bebf8c2b7568bb1b766307e378eaf5ecea1bb1c6cf08082c9c13b35978558",
+      "readingSha256": "494e0e888c553260366049a8e5b302bf0d1845445057b1b81318a5e35378f4ad",
+      "meaningSha256": "6e9733ae14e265a9dbb2d7452f914fe2f538df908d28255174c17978818705b2",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/3:26?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/3/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "3:27",
+      "arabicSha256": "fd93408ee1a4cdbe29c21c1d63aaf5ac5a899227e13b051921beeddc23a8c21f",
+      "readingSha256": "c8946f526891ce9bddeaeed42c5ee3f8b8f1f91bcb8ca7d74a5171468ca522f4",
+      "meaningSha256": "0daee1039f4e5ec57134404fd35e60cc3a732dfde2008ed71f3f022deb8a1ec6",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/3:27?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/3/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "48:27",
+      "arabicSha256": "fcd44da2ba20c5aa731f570efe489d0fdc3579f37a2d856601b380b32f9a09ff",
+      "readingSha256": "9b9199dc4b7add4ebb17ffd52cb1468155e492a01d32912163017bcd64d03d9a",
+      "meaningSha256": "bb8130bfc773dde45c0e370e0c7c049dbedc3543d8287f9bc5953264786cedf9",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/48:27?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/48/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "48:28",
+      "arabicSha256": "432f454e05fc8138dbf23154f793f225a0c967926cad3ba4476996ba2bcc3b67",
+      "readingSha256": "28e17b534295813bd23855856d6df5a8c4ae4b4982f27c74d92b2512f3e4273d",
+      "meaningSha256": "9c01043686e4e5a6285a21fe6d4225a328da5cbdf43ea29c4ae73475d13015ae",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/48:28?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/48/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "48:29",
+      "arabicSha256": "1e38a68421bcf9cf14006cd156aa5c31f205642a471655815cbc047f792a6217",
+      "readingSha256": "537df6b113a6502fa46ef33a58fcecde576efe516827acd7b70c3f39c6106ff8",
+      "meaningSha256": "b7f2913d5d3ee15bc738f078ccf5575753396a3c62370c41f01879dd8a51ea4b",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/48:29?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/48/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "23:115",
+      "arabicSha256": "079326e0640b4af4eed1b71fa03c9310558c6b946112f7869b6ba96323160a81",
+      "readingSha256": "1bfa5c261bcbd2737b19407b46734985b7314ea52903cbe3f99dc81635f4cde7",
+      "meaningSha256": "0be6eeffe9037bf20608d92d544195a9d44a8655089bf125fe8fe3a54e65d950",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/23:115?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/23/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "23:116",
+      "arabicSha256": "c3cb1551774f1e2c20bc3a525d2e17d6925136e672cf5ed539ad356430bcd04b",
+      "readingSha256": "5e17f92dc65a40f32c33d9aed6ad37463612e4881293665ae71e6efc9978dda3",
+      "meaningSha256": "3021e13255fcaa2111fdec041b230b0767e7cd4f5678ebec2ba3d2ebe899d9ec",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/23:116?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/23/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "23:117",
+      "arabicSha256": "c90c2f6b88cbb9f32e7cbe01d0e617389678c502b71100d0b9e99cafc0c56f22",
+      "readingSha256": "331d1efab95e448954a32cb5cf9e67ccce2a553ee969a332586970fcff00897c",
+      "meaningSha256": "75d0f483676a757c3a609c95f02a2ca2a2d48da054dc80ca38864b7627a98525",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/23:117?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/23/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    },
+    {
+      "id": "23:118",
+      "arabicSha256": "141de2ac78743f5f6b0d36694f61bb2e8c646e430320397f515ce7e936ad5643",
+      "readingSha256": "d759d789d8a979eb9509194678e9f38685b4f2a1d0f47fc4818671404c691043",
+      "meaningSha256": "af0bab53f58f67fdc1439c65ccab93de8acd52612bb0ab3fc1221fb8e75b4235",
+      "arabicSource": "https://api.quran.com/api/v4/verses/by_key/23:118?fields=text_uthmani",
+      "comparisonSource": "https://api.alquran.cloud/v1/surah/23/editions/quran-uthmani,tr.transliteration,tr.vakfi"
+    }
+  ]
+}

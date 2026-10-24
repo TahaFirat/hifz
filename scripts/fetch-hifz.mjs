@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {withTurkishSource} from '../lib/hifz/readings.ts';
 const out = new URL('../lib/hifz/', import.meta.url);
+const [passages,sourceNotes,previousCorpus]=await Promise.all(['passages.json','passage-source-notes.json','turkish.json'].map(async name=>JSON.parse(await fs.readFile(new URL(name,out),'utf8'))));
 async function json(url) {
   for (let attempt=0; attempt<3; attempt++) {
     try { const r=await fetch(url,{signal:AbortSignal.timeout(30000)});if(!r.ok) throw Error(`${r.status} ${url}`);return await r.json(); }
@@ -14,8 +16,9 @@ await fs.writeFile(new URL('chapters.json',out),JSON.stringify(directory));
 const corpus={};
 const [trSource,mealSource]=await Promise.all(['tr.transliteration','tr.vakfi'].map(async e=>(await json('https://api.alquran.cloud/v1/quran/'+e)).data.surahs));
 for(const s of trSource){corpus[s.number]={};const meal=mealSource.find(m=>m.number===s.number);for(const v of s.ayahs){const m=meal.ayahs.find(a=>a.numberInSurah===v.numberInSurah);if(!v.text||!m?.text)throw Error('Incomplete Turkish source');corpus[s.number][v.numberInSurah]={reading:v.text,meaning:m.text};}}
+for(const [id,note] of Object.entries(sourceNotes)){const [chapter,number]=id.split(':'),old=previousCorpus[chapter]?.[number]?.meaning,next=corpus[chapter]?.[number]?.meaning;if(old!==next){if(!old||!next||createHash('sha256').update(old).digest('hex')!==note.meaningSha256||!old.startsWith(next))throw Error(`${id}: unreviewed translation change`);corpus[chapter][number].meaning=old;}}
 await fs.writeFile(new URL('turkish.json',out),JSON.stringify(corpus));
-const ids=[1,2,59,...Array.from({length:22},(_,i)=>93+i)];
+const ids=[...new Set([1,...passages.map(p=>p.chapter),...Array.from({length:22},(_,i)=>93+i)])];
 const data={};
 const clean=s=>s.replace(/<[^>]*>/g,'').trim();
 const reading=s=>s.replace(/sh/g,'ş').replace(/th/g,'s').replace(/dh/g,'z').replace(/kh/g,'h').replace(/gh/g,'ğ').replace(/ḥ/g,'h').replace(/ṣ/g,'s').replace(/ḍ/g,'d').replace(/ṭ/g,'t').replace(/ẓ/g,'z').replace(/ā/g,'â').replace(/ī/g,'î').replace(/ū/g,'û').replace(/ʿ/g,'‘').replace(/ʾ/g,'’').replace(/w/g,'v');
@@ -28,8 +31,7 @@ await Promise.all(Array.from({length:3},async()=>{
       const response=await json(`https://api.quran.com/api/v4/verses/by_chapter/${id}?language=tr&words=true&word_fields=text_uthmani&translations=77&per_page=50&page=${page}`);
       verses.push(...response.verses);page=response.pagination.next_page;
     }while(page);
-    if(id===2)verses=verses.filter(v=>[255,285,286].includes(v.verse_number));
-    if(id===59)verses=verses.filter(v=>v.verse_number>=22);
+    if(id!==1&&id<93)verses=verses.filter(v=>passages.some(p=>p.chapter===id&&v.verse_number>=p.start&&v.verse_number<=p.end));
     if(id===96)verses=verses.filter(v=>v.verse_number<=5);
     data[id]={source:'Quran.com (Türkçe kelime anlamı, Diyanet meali); AlQuran Cloud (tam Türkçe okunuş). Kelime okunuşları fonetik dönüşümdür.',verses:verses.map(v=>({number:v.verse_number,arabic:v.words.filter(w=>w.char_type_name==='word').map(w=>w.text_uthmani).join(' '),reading:tr.find(a=>a.numberInSurah===v.verse_number).text,meaning:clean(v.translations[0].text),audio:`https://everyayah.com/data/Alafasy_128kbps/${String(id).padStart(3,'0')}${String(v.verse_number).padStart(3,'0')}.mp3`,approximate:true,words:v.words.filter(w=>w.char_type_name==='word').map(w=>({arabic:w.text_uthmani,reading:reading(w.transliteration.text||''),meaning:clean(w.translation.text)}))}))};
     console.log(`${id}: ${data[id].verses.length} ayet`);
@@ -48,3 +50,5 @@ for(const [name,url] of [
  const r=await fetch(url);if(!r.ok)throw Error(`Font ${name}: ${r.status}`);await fs.writeFile(new URL(`../public/fonts/${name}`,import.meta.url),Buffer.from(await r.arrayBuffer()));
 }
 await fs.writeFile(new URL('provenance.json',out),JSON.stringify({retrievedAt:new Date().toISOString(),sources:['https://api.quran.com/api/v4','https://api.alquran.cloud/v1'],chapters:ids,verses:Object.values(data).reduce((n,s)=>n+s.verses.length,0),wordReading:'Turkish source transcription; exact phrase alignment or intact full reading. Fatiha independent onsets curated.',acikkuran:'DNS resolution failed during initial retrieval.'},null,2));
+await import('./prepare-passages.mjs');
+await import('./audit-corpus.mjs');

@@ -1,0 +1,243 @@
+name: iOS Build & TestFlight Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS with Xcode on Cloud Mac
+    runs-on: macos-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      BUNDLE_ID: com.tahafirat.hifz
+      PROFILE_NAME: Hifz AppStore Profile
+      TEAM_ID: U3YT2CXH58
+      APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+      APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID || 'N7XD86ZSMH' }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID || 'c4346abc-087b-4e87-a020-6737592faa26' }}
+      BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD || 'LockIn2026!' }}
+
+    steps:
+      - name: 1. Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: 3. Install Dependencies
+        run: npm install
+
+      - name: 4. Build Web Application
+        run: npm run build
+
+      - name: 5. Sync Capacitor iOS Project
+        run: |
+          npx cap sync ios
+          cat > ios/App/App/config.xml << 'EOF'
+          <?xml version='1.0' encoding='utf-8'?>
+          <widget version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+          </widget>
+          EOF
+
+      - name: 6. Install Apple Distribution Certificate & Auto-Provision Profile
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 12)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          if [ -n "$BUILD_CERTIFICATE_BASE64" ]; then
+            echo "$BUILD_CERTIFICATE_BASE64" | base64 --decode > $RUNNER_TEMP/certificate.p12
+          elif [ -f "apple_certs/certificate.p12" ]; then
+            cp apple_certs/certificate.p12 $RUNNER_TEMP/certificate.p12
+          fi
+
+          if [ -f "$RUNNER_TEMP/certificate.p12" ]; then
+            security import $RUNNER_TEMP/certificate.p12 -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+            security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+            security list-keychain -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | sed -e 's/^[[:space:]]*//' -e 's/"//g')
+            echo "HAS_CERT=true" >> $GITHUB_ENV
+          fi
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+
+          if [ -z "$APP_STORE_CONNECT_API_KEY" ] && [ -f "apple_certs/AuthKey_N7XD86ZSMH.p8" ]; then
+            export APP_STORE_CONNECT_API_KEY="$(cat apple_certs/AuthKey_N7XD86ZSMH.p8)"
+          fi
+
+          PROFILE_FILE=apple_certs/Hifz.mobileprovision
+          NEED_PROFILE=true
+          if [ -f "$PROFILE_FILE" ]; then
+            security cms -D -i "$PROFILE_FILE" > $RUNNER_TEMP/profile.plist
+            EXP=$(/usr/libexec/PlistBuddy -c "Print ExpirationDate" $RUNNER_TEMP/profile.plist)
+            if [ "$(date -j -f '%a %b %d %T %Z %Y' "$EXP" +%s 2>/dev/null || echo 0)" -gt "$(date +%s)" ]; then
+              NEED_PROFILE=false
+            fi
+          fi
+
+          if [ "$NEED_PROFILE" = true ] && [ -n "$APP_STORE_CONNECT_API_KEY" ] && [ -n "$APP_STORE_CONNECT_ISSUER_ID" ]; then
+            echo "Auto-provisioning Bundle ID & App Store Profile via App Store Connect API..."
+            pip3 install --break-system-packages --quiet pyjwt cryptography requests || pip3 install --user --quiet pyjwt cryptography requests
+            python3 - << 'PYEOF'
+          import os, re, time, base64, jwt, requests
+          key_id = os.environ.get('APP_STORE_CONNECT_KEY_ID', 'N7XD86ZSMH').strip()
+          issuer = os.environ.get('APP_STORE_CONNECT_ISSUER_ID', '').strip()
+          b64 = re.sub(r'-----BEGIN [^-]+-----|-----END [^-]+-----|\s+', '', os.environ.get('APP_STORE_CONNECT_API_KEY', ''))
+          pem = '-----BEGIN PRIVATE KEY-----\n' + '\n'.join(b64[i:i+64] for i in range(0, len(b64), 64)) + '\n-----END PRIVATE KEY-----\n'
+          tok = jwt.encode({'iss': issuer, 'iat': int(time.time()), 'exp': int(time.time()) + 1100, 'aud': 'appstoreconnect-v1'}, pem, algorithm='ES256', headers={'kid': key_id, 'typ': 'JWT'})
+          H = {'Authorization': f'Bearer {tok}', 'Content-Type': 'application/json'}
+          A = 'https://api.appstoreconnect.apple.com/v1'
+          bundle, name = os.environ['BUNDLE_ID'], os.environ['PROFILE_NAME']
+          bid = next((b['id'] for b in requests.get(f'{A}/bundleIds', headers=H, params={'filter[identifier]': bundle}).json().get('data', []) if b['attributes']['identifier'] == bundle), None)
+          if not bid:
+              bid = requests.post(f'{A}/bundleIds', headers=H, json={'data': {'type': 'bundleIds', 'attributes': {'identifier': bundle, 'name': 'Hifz Sure ve Dua Ezber', 'platform': 'IOS'}}}).json()['data']['id']
+          certs = [c['id'] for c in requests.get(f'{A}/certificates', headers=H, params={'limit': 200}).json().get('data', []) if 'DISTRIBUTION' in c['attributes'].get('certificateType', '')]
+          for p in requests.get(f'{A}/profiles', headers=H, params={'filter[name]': name}).json().get('data', []):
+              requests.delete(f"{A}/profiles/{p['id']}", headers=H)
+          r = requests.post(f'{A}/profiles', headers=H, json={'data': {'type': 'profiles', 'attributes': {'name': name, 'profileType': 'IOS_APP_STORE'}, 'relationships': {'bundleId': {'data': {'type': 'bundleIds', 'id': bid}}, 'certificates': {'data': [{'type': 'certificates', 'id': c} for c in certs]}}}})
+          r.raise_for_status()
+          os.makedirs('apple_certs', exist_ok=True)
+          open('apple_certs/Hifz.mobileprovision', 'wb').write(base64.b64decode(r.json()['data']['attributes']['profileContent']))
+          print('Profile refreshed')
+          PYEOF
+            security cms -D -i "$PROFILE_FILE" > $RUNNER_TEMP/profile.plist
+          fi
+
+          if [ -f "$PROFILE_FILE" ]; then
+            PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" $RUNNER_TEMP/profile.plist)
+            cp "$PROFILE_FILE" ~/Library/MobileDevice/Provisioning\ Profiles/${PROFILE_UUID}.mobileprovision
+            echo "Installed profile $PROFILE_UUID ($PROFILE_NAME)"
+          fi
+
+      - name: 7. Build Xcode Project Archive
+        run: |
+          cd ios/App
+          xcodebuild -project App.xcodeproj \
+                     -scheme App \
+                     -destination 'generic/platform=iOS' \
+                     -configuration Release \
+                     CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+                     PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
+                     DEVELOPMENT_TEAM="$TEAM_ID" \
+                     CODE_SIGN_STYLE="Manual" \
+                     PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+                     CODE_SIGN_IDENTITY="Apple Distribution" \
+                     clean archive \
+                     -archivePath ./build/App.xcarchive
+
+      - name: 8. Export Official Signed App IPA
+        run: |
+          cd ios/App
+          xcodebuild -exportArchive \
+                     -archivePath ./build/App.xcarchive \
+                     -exportPath ./build/export \
+                     -exportOptionsPlist exportOptions.plist
+          cp ./build/export/*.ipa ./build/App.ipa
+
+      - name: 9. Upload Release Artifacts to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: Hifz-Signed-iOS-App
+          path: mobile/ios/App/build/App.ipa
+          retention-days: 14
+
+      - name: 10. Upload to Apple TestFlight / App Store Connect
+        run: |
+          set -o pipefail
+
+          if [ -z "$APP_STORE_CONNECT_API_KEY" ] && [ -f "apple_certs/AuthKey_N7XD86ZSMH.p8" ]; then
+            export APP_STORE_CONNECT_API_KEY="$(cat apple_certs/AuthKey_N7XD86ZSMH.p8)"
+          fi
+
+          KEY_ID=$(echo "$APP_STORE_CONNECT_KEY_ID" | tr -d '[:space:]')
+          ISSUER_ID=$(echo "$APP_STORE_CONNECT_ISSUER_ID" | tr -d '[:space:]')
+
+          python3 -c "
+          import os, re
+          raw = os.environ.get('APP_STORE_CONNECT_API_KEY', '').strip()
+          b64 = re.sub(r'-----BEGIN [^-]+-----|-----END [^-]+-----|\s+', '', raw)
+          lines = [b64[i:i+64] for i in range(0, len(b64), 64)]
+          pem = '-----BEGIN PRIVATE KEY-----\n' + '\n'.join(lines) + '\n-----END PRIVATE KEY-----\n'
+          for d in [os.path.expanduser('~/.appstoreconnect/private_keys'), os.path.expanduser('~/.private_keys'), './private_keys']:
+              os.makedirs(d, exist_ok=True)
+              p = os.path.join(d, 'AuthKey_' + '${KEY_ID}' + '.p8')
+              with open(p, 'w') as f:
+                  f.write(pem)
+              os.chmod(p, 0o600)
+          "
+
+          UPLOAD_SUCCESS=false
+
+          echo "=== Checking App Store Connect for com.tahafirat.hifz App Record ==="
+          pip3 install --break-system-packages --quiet pyjwt cryptography requests 2>/dev/null || true
+          python3 - << 'PYEOF'
+          import os, re, time, jwt, requests
+          key_id = os.environ.get('APP_STORE_CONNECT_KEY_ID', 'N7XD86ZSMH').strip()
+          issuer = os.environ.get('APP_STORE_CONNECT_ISSUER_ID', '').strip()
+          b64 = re.sub(r'-----BEGIN [^-]+-----|-----END [^-]+-----|\s+', '', os.environ.get('APP_STORE_CONNECT_API_KEY', ''))
+          pem = '-----BEGIN PRIVATE KEY-----\n' + '\n'.join(b64[i:i+64] for i in range(0, len(b64), 64)) + '\n-----END PRIVATE KEY-----\n'
+          tok = jwt.encode({'iss': issuer, 'iat': int(time.time()), 'exp': int(time.time()) + 1100, 'aud': 'appstoreconnect-v1'}, pem, algorithm='ES256', headers={'kid': key_id, 'typ': 'JWT'})
+          H = {'Authorization': f'Bearer {tok}'}
+          for attempt in range(12):
+              r = requests.get('https://api.appstoreconnect.apple.com/v1/apps', headers=H, params={'filter[bundleId]': 'com.tahafirat.hifz'})
+              apps = r.json().get('data', [])
+              if apps:
+                  print(f"Found App Store Connect record: {apps[0]['id']} ({apps[0]['attributes']['name']})")
+                  break
+              if attempt == 0:
+                  print("Waiting for New App (com.tahafirat.hifz) to be created in App Store Connect UI...")
+              time.sleep(15)
+          PYEOF
+
+          echo "=== Attempting Upload via xcrun altool ==="
+          if xcrun altool --upload-app --type ios --file ./ios/App/build/App.ipa --apiKey "${KEY_ID}" --apiIssuer "${ISSUER_ID}" --verbose 2>&1 | tee altool.log; then
+            UPLOAD_SUCCESS=true
+          else
+            cat altool.log >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "$UPLOAD_SUCCESS" = false ]; then
+            TRANSPORTER=$(find /Applications/Xcode* -name iTMSTransporter 2>/dev/null | head -n 1)
+            if [ -n "$TRANSPORTER" ] && [ -x "$TRANSPORTER" ]; then
+              if "$TRANSPORTER" -m upload -assetFile ./ios/App/build/App.ipa -apiKey "${KEY_ID}" -apiIssuer "${ISSUER_ID}" 2>&1 | tee itms.log; then
+                UPLOAD_SUCCESS=true
+              else
+                cat itms.log >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          fi
+
+          if [ "$UPLOAD_SUCCESS" = false ]; then
+            python3 -c "
+            import json, os
+            data = {
+              'key_id': '${KEY_ID}',
+              'issuer_id': '${ISSUER_ID}',
+              'key_filepath': os.path.expanduser('~/.appstoreconnect/private_keys/AuthKey_' + '${KEY_ID}' + '.p8'),
+              'duration': 1200,
+              'in_house': False
+            }
+            with open('api_key.json', 'w') as f:
+                json.dump(data, f)
+            "
+            if fastlane pilot upload --ipa ./ios/App/build/App.ipa --api_key_path api_key.json --skip_waiting_for_build_processing true 2>&1 | tee fastlane.log; then
+              UPLOAD_SUCCESS=true
+            else
+              cat fastlane.log >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          if [ "$UPLOAD_SUCCESS" = false ]; then
+            exit 1
+          fi

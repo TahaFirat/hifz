@@ -1,0 +1,6 @@
+/* Native (iOS) adjustments: notch / Dynamic Island / home-indicator safe areas. */
+html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); padding-bottom: env(safe-area-inset-bottom); }
+.home-header { padding-top: env(safe-area-inset-top); height: calc(74px + env(safe-area-inset-top)); }
+.topbar { padding-top: max(10px, calc(env(safe-area-inset-top) + 6px)); }
+html { scroll-padding-top: calc(110px + env(safe-area-inset-top)); }

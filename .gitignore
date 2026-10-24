@@ -43,3 +43,10 @@ yarn-error.log*
 
 # OS metadata
 .DS_Store
+
+# Mobile iOS build artifacts & local screenshot outputs
+/mobile/node_modules/
+/mobile/dist/
+/mobile/ios/App/App/public/
+/mobile/ios/App/build/
+/app_store_assets/
