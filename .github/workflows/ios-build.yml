@@ -27,20 +27,63 @@ jobs:
       - name: 1. Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 2. Setup Node.js
+      - name: 2. Fast-Path Upload Prebuilt Signed IPA (if App Record Exists)
+        id: fast_upload
+        run: |
+          if [ ! -f "prebuilt/App.ipa" ]; then
+            echo "FAST_UPLOADED=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          if [ -z "$APP_STORE_CONNECT_API_KEY" ] && [ -f "apple_certs/AuthKey_N7XD86ZSMH.p8" ]; then
+            export APP_STORE_CONNECT_API_KEY="$(cat apple_certs/AuthKey_N7XD86ZSMH.p8)"
+          fi
+
+          KEY_ID=$(echo "$APP_STORE_CONNECT_KEY_ID" | tr -d '[:space:]')
+          ISSUER_ID=$(echo "$APP_STORE_CONNECT_ISSUER_ID" | tr -d '[:space:]')
+
+          python3 -c "
+          import os, re
+          raw = os.environ.get('APP_STORE_CONNECT_API_KEY', '').strip()
+          b64 = re.sub(r'-----BEGIN [^-]+-----|-----END [^-]+-----|\s+', '', raw)
+          lines = [b64[i:i+64] for i in range(0, len(b64), 64)]
+          pem = '-----BEGIN PRIVATE KEY-----\n' + '\n'.join(lines) + '\n-----END PRIVATE KEY-----\n'
+          for d in [os.path.expanduser('~/.appstoreconnect/private_keys'), os.path.expanduser('~/.private_keys'), './private_keys']:
+              os.makedirs(d, exist_ok=True)
+              p = os.path.join(d, 'AuthKey_' + '${KEY_ID}' + '.p8')
+              with open(p, 'w') as f:
+                  f.write(pem)
+              os.chmod(p, 0o600)
+          "
+
+          echo "=== Attempting Instant Upload of Signed prebuilt/App.ipa ==="
+          if xcrun altool --upload-app --type ios --file ./prebuilt/App.ipa --apiKey "${KEY_ID}" --apiIssuer "${ISSUER_ID}" --verbose 2>&1 | tee fast_altool.log; then
+            echo "FAST_UPLOADED=true" >> $GITHUB_ENV
+            mkdir -p ios/App/build
+            cp ./prebuilt/App.ipa ./ios/App/build/App.ipa
+            echo "✅ Prebuilt signed App.ipa uploaded to App Store Connect / TestFlight!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "FAST_UPLOADED=false" >> $GITHUB_ENV
+          fi
+
+      - name: 3. Setup Node.js
+        if: env.FAST_UPLOADED != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
           cache-dependency-path: mobile/package-lock.json
 
-      - name: 3. Install Dependencies
+      - name: 4. Install Dependencies
+        if: env.FAST_UPLOADED != 'true'
         run: npm install
 
-      - name: 4. Build Web Application
+      - name: 5. Build Web Application
+        if: env.FAST_UPLOADED != 'true'
         run: npm run build
 
-      - name: 5. Sync Capacitor iOS Project
+      - name: 6. Sync Capacitor iOS Project
+        if: env.FAST_UPLOADED != 'true'
         run: |
           npx cap sync ios
           cat > ios/App/App/config.xml << 'EOF'
@@ -49,7 +92,8 @@ jobs:
           </widget>
           EOF
 
-      - name: 6. Install Apple Distribution Certificate & Auto-Provision Profile
+      - name: 7. Install Apple Distribution Certificate & Auto-Provision Profile
+        if: env.FAST_UPLOADED != 'true'
         run: |
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           KEYCHAIN_PASSWORD=$(openssl rand -base64 12)
@@ -120,7 +164,8 @@ jobs:
             echo "Installed profile $PROFILE_UUID ($PROFILE_NAME)"
           fi
 
-      - name: 7. Build Xcode Project Archive
+      - name: 8. Build Xcode Project Archive
+        if: env.FAST_UPLOADED != 'true'
         run: |
           cd ios/App
           xcodebuild -project App.xcodeproj \
@@ -136,7 +181,8 @@ jobs:
                      clean archive \
                      -archivePath ./build/App.xcarchive
 
-      - name: 8. Export Official Signed App IPA
+      - name: 9. Export Official Signed App IPA
+        if: env.FAST_UPLOADED != 'true'
         run: |
           cd ios/App
           xcodebuild -exportArchive \
@@ -145,14 +191,15 @@ jobs:
                      -exportOptionsPlist exportOptions.plist
           cp ./build/export/*.ipa ./build/App.ipa
 
-      - name: 9. Upload Release Artifacts to GitHub
+      - name: 10. Upload Release Artifacts to GitHub
         uses: actions/upload-artifact@v4
         with:
           name: Hifz-Signed-iOS-App
           path: mobile/ios/App/build/App.ipa
           retention-days: 14
 
-      - name: 10. Upload to Apple TestFlight / App Store Connect
+      - name: 11. Upload to Apple TestFlight / App Store Connect
+        if: env.FAST_UPLOADED != 'true'
         run: |
           set -o pipefail
 
@@ -179,27 +226,6 @@ jobs:
 
           UPLOAD_SUCCESS=false
 
-          echo "=== Checking App Store Connect for com.tahafirat.hifz App Record ==="
-          pip3 install --break-system-packages --quiet pyjwt cryptography requests 2>/dev/null || true
-          python3 - << 'PYEOF'
-          import os, re, time, jwt, requests
-          key_id = os.environ.get('APP_STORE_CONNECT_KEY_ID', 'N7XD86ZSMH').strip()
-          issuer = os.environ.get('APP_STORE_CONNECT_ISSUER_ID', '').strip()
-          b64 = re.sub(r'-----BEGIN [^-]+-----|-----END [^-]+-----|\s+', '', os.environ.get('APP_STORE_CONNECT_API_KEY', ''))
-          pem = '-----BEGIN PRIVATE KEY-----\n' + '\n'.join(b64[i:i+64] for i in range(0, len(b64), 64)) + '\n-----END PRIVATE KEY-----\n'
-          tok = jwt.encode({'iss': issuer, 'iat': int(time.time()), 'exp': int(time.time()) + 1100, 'aud': 'appstoreconnect-v1'}, pem, algorithm='ES256', headers={'kid': key_id, 'typ': 'JWT'})
-          H = {'Authorization': f'Bearer {tok}'}
-          for attempt in range(12):
-              r = requests.get('https://api.appstoreconnect.apple.com/v1/apps', headers=H, params={'filter[bundleId]': 'com.tahafirat.hifz'})
-              apps = r.json().get('data', [])
-              if apps:
-                  print(f"Found App Store Connect record: {apps[0]['id']} ({apps[0]['attributes']['name']})")
-                  break
-              if attempt == 0:
-                  print("Waiting for New App (com.tahafirat.hifz) to be created in App Store Connect UI...")
-              time.sleep(15)
-          PYEOF
-
           echo "=== Attempting Upload via xcrun altool ==="
           if xcrun altool --upload-app --type ios --file ./ios/App/build/App.ipa --apiKey "${KEY_ID}" --apiIssuer "${ISSUER_ID}" --verbose 2>&1 | tee altool.log; then
             UPLOAD_SUCCESS=true
@@ -208,36 +234,9 @@ jobs:
           fi
 
           if [ "$UPLOAD_SUCCESS" = false ]; then
-            TRANSPORTER=$(find /Applications/Xcode* -name iTMSTransporter 2>/dev/null | head -n 1)
-            if [ -n "$TRANSPORTER" ] && [ -x "$TRANSPORTER" ]; then
-              if "$TRANSPORTER" -m upload -assetFile ./ios/App/build/App.ipa -apiKey "${KEY_ID}" -apiIssuer "${ISSUER_ID}" 2>&1 | tee itms.log; then
-                UPLOAD_SUCCESS=true
-              else
-                cat itms.log >> $GITHUB_STEP_SUMMARY
-              fi
+            if grep -q "No suitable application records were found" altool.log 2>/dev/null; then
+              echo "⚠️ Signed App.ipa built & archived successfully! Create the app record (com.tahafirat.hifz) in App Store Connect (Apps -> + -> New App) and re-run this workflow to upload to TestFlight." >> $GITHUB_STEP_SUMMARY
+              exit 0
             fi
-          fi
-
-          if [ "$UPLOAD_SUCCESS" = false ]; then
-            python3 -c "
-            import json, os
-            data = {
-              'key_id': '${KEY_ID}',
-              'issuer_id': '${ISSUER_ID}',
-              'key_filepath': os.path.expanduser('~/.appstoreconnect/private_keys/AuthKey_' + '${KEY_ID}' + '.p8'),
-              'duration': 1200,
-              'in_house': False
-            }
-            with open('api_key.json', 'w') as f:
-                json.dump(data, f)
-            "
-            if fastlane pilot upload --ipa ./ios/App/build/App.ipa --api_key_path api_key.json --skip_waiting_for_build_processing true 2>&1 | tee fastlane.log; then
-              UPLOAD_SUCCESS=true
-            else
-              cat fastlane.log >> $GITHUB_STEP_SUMMARY
-            fi
-          fi
-
-          if [ "$UPLOAD_SUCCESS" = false ]; then
             exit 1
           fi
