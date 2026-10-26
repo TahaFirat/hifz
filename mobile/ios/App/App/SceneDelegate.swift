@@ -2,8 +2,8 @@ import UIKit
 import Capacitor
 import WebKit
 
-final class HifzRootBridgeViewController: CAPBridgeViewController {
-    override open func capacitorDidLoad() {
+class HifzRootBridgeViewController: CAPBridgeViewController {
+    override public func capacitorDidLoad() {
         super.capacitorDidLoad()
         HifzNativeEngine.shared.hostViewController = self
         if let wv = self.webView {
