@@ -1,29 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="32%" r="80%">
-      <stop offset="0" stop-color="#172336"/>
-      <stop offset="1" stop-color="#070b10"/>
+    <radialGradient id="bg" cx="50%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#0f352e"/>
+      <stop offset="1" stop-color="#061412"/>
     </radialGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#f6e2b3"/>
-      <stop offset="0.55" stop-color="#d8b66e"/>
-      <stop offset="1" stop-color="#a88038"/>
+    <linearGradient id="emerald" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#34d399"/>
+      <stop offset="1" stop-color="#059669"/>
     </linearGradient>
-    <linearGradient id="goldSoft" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ebd094" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#a88038" stop-opacity="0.12"/>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="0.55" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#b45309"/>
     </linearGradient>
   </defs>
   <rect width="1024" height="1024" fill="url(#bg)"/>
-  <!-- Outer subtle frame -->
-  <circle cx="512" cy="512" r="410" fill="none" stroke="url(#goldSoft)" stroke-width="6"/>
-  <!-- Rub el Hizb (Ottoman 8-pointed star) -->
+  <!-- Outer emerald ring -->
+  <circle cx="512" cy="512" r="418" fill="none" stroke="url(#emerald)" stroke-opacity="0.35" stroke-width="8"/>
+  <!-- Rub el Hizb (Ottoman 8-pointed star in Emerald & Gold) -->
   <g transform="translate(512 512)">
-    <rect x="-245" y="-245" width="490" height="490" rx="28" fill="#0d1520" fill-opacity="0.55" stroke="url(#gold)" stroke-width="26" stroke-linejoin="round"/>
-    <rect x="-245" y="-245" width="490" height="490" rx="28" transform="rotate(45)" fill="#0c131d" fill-opacity="0.88" stroke="url(#gold)" stroke-width="26" stroke-linejoin="round"/>
-    <circle cx="0" cy="0" r="192" fill="none" stroke="url(#goldSoft)" stroke-width="5"/>
+    <rect x="-245" y="-245" width="490" height="490" rx="32" fill="#09221e" fill-opacity="0.7" stroke="url(#emerald)" stroke-width="26" stroke-linejoin="round"/>
+    <rect x="-245" y="-245" width="490" height="490" rx="32" transform="rotate(45)" fill="#071b18" fill-opacity="0.92" stroke="url(#gold)" stroke-width="26" stroke-linejoin="round"/>
+    <circle cx="0" cy="0" r="192" fill="none" stroke="url(#emerald)" stroke-opacity="0.4" stroke-width="6"/>
   </g>
   <!-- Stylized 'h.' emblem of hıfz. -->
   <path d="M396 644V356h68v104c56-56 172-36 172 68v116h-68V532c0-54-104-46-104 14v98Z" fill="url(#gold)"/>
-  <circle cx="676" cy="612" r="34" fill="#f6e2b3"/>
+  <circle cx="676" cy="612" r="34" fill="#34d399"/>
 </svg>

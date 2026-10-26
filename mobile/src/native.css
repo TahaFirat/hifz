@@ -1,6 +1,264 @@
-/* Native (iOS) adjustments: notch / Dynamic Island / home-indicator safe areas. */
-html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
-body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); padding-bottom: env(safe-area-inset-bottom); }
-.home-header { padding-top: env(safe-area-inset-top); height: calc(74px + env(safe-area-inset-top)); }
-.topbar { padding-top: max(10px, calc(env(safe-area-inset-top) + 6px)); }
-html { scroll-padding-top: calc(110px + env(safe-area-inset-top)); }
+/* Native iOS Emerald Studio Theme & Bottom Tab Bar Architecture */
+:root {
+  --background: #061412 !important;
+  --surface: #0b211d !important;
+  --tile: #102d28 !important;
+  --text: #eef6f4 !important;
+  --muted: #8fb5ad !important;
+  --reading: #34d399 !important;
+  --gold: #10b981 !important;
+  --amber: #f59e0b !important;
+  --line: #1a3f38 !important;
+  --active: #123831 !important;
+  --hover: #16423a !important;
+}
+
+:root[data-theme=light] {
+  --background: #f2f8f6 !important;
+  --surface: #ffffff !important;
+  --tile: #e6f2ee !important;
+  --text: #0d2924 !important;
+  --muted: #496e67 !important;
+  --reading: #047857 !important;
+  --gold: #059669 !important;
+  --amber: #d97706 !important;
+  --line: #c7dfd9 !important;
+  --active: #d1fae5 !important;
+  --hover: #e0f2fe !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  scroll-padding-top: calc(110px + env(safe-area-inset-top));
+}
+
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: calc(78px + env(safe-area-inset-bottom));
+  background: var(--background);
+  color: var(--text);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.home-header {
+  padding-top: max(12px, env(safe-area-inset-top));
+  height: calc(72px + env(safe-area-inset-top));
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.topbar {
+  padding-top: max(10px, calc(env(safe-area-inset-top) + 6px));
+  background: color-mix(in srgb, var(--surface) 94%, transparent) !important;
+  backdrop-filter: blur(18px);
+}
+
+/* Native iOS Bottom Tab Bar */
+.ios-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  padding: 6px max(10px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-right));
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--line);
+}
+
+.ios-tabbar button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 52px;
+  padding: 4px 2px;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+
+.ios-tabbar button.active {
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
+}
+
+/* Native Studio Panels (Tajweed & Mastery Analytics & Reminders) */
+.ios-studio-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: calc(16px + env(safe-area-inset-top)) 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ios-hero-banner {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--tile) 100%);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ios-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: color-mix(in srgb, var(--gold) 18%, transparent);
+  color: var(--gold);
+}
+
+.ios-hero-banner h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+
+.ios-hero-banner p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.ios-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ios-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ios-stat-card strong {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.ios-stat-card span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ios-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ios-card h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ios-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 10px 16px;
+  border-radius: 11px;
+  background: var(--gold);
+  color: #041310;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ios-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--tile);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tajweed-rule-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.tajweed-rule-card {
+  background: var(--tile);
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tajweed-arabic-sample {
+  font-family: 'Noto Naskh Arabic', Amiri, serif;
+  font-size: 30px;
+  line-height: 1.9;
+  text-align: right;
+  direction: rtl;
+}
+
+.tajweed-token-qalqalah {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.14);
+  padding: 0 4px;
+  border-radius: 6px;
+}
+
+.tajweed-token-ghunnah {
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.14);
+  padding: 0 4px;
+  border-radius: 6px;
+}
+
+.tajweed-token-madd {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.14);
+  padding: 0 4px;
+  border-radius: 6px;
+}

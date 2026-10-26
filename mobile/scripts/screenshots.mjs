@@ -204,36 +204,20 @@ try {
     })()`);
     await shot(d.name, '04_hafiz_kocu_3plus3.png', '#070b10');
 
-    // 5. Sıralama & Köprü Testi (Order Mode) on Âyetel Kürsî
-    await go(BASE + '/calis?kategori=basics&icerik=k255');
-    await waitFor(`document.querySelectorAll('.verse-card').length > 0`);
-    await evaluate(`(() => {
-      const sel = document.querySelector('#method-select');
-      if (sel) {
-        const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
-        setter.call(sel, 'order');
-        sel.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-      window.scrollTo(0, 0);
-      return true;
-    })()`);
-    await sleep(300);
-    await shot(d.name, '05_siralama_kopru_testi.png', '#070b10');
+    // 5. Tecvit & Mahreç Laboratuvarı Tab
+    await go(BASE + '/?sekme=tecvit');
+    await sleep(350);
+    await shot(d.name, '05_siralama_kopru_testi.png', '#061412');
 
-    // 6. Light Theme — Namaz Duaları (Sübhaneke / Ettehiyyatü)
+    // 6. Ezber Karnem & Günlük iOS Hatırlatıcı Tab
     await evaluate(`(() => {
-      localStorage.setItem('hifz:theme', 'light');
-      document.documentElement.dataset.theme = 'light';
+      localStorage.setItem('hifz:ios-reminder:v1', '1');
+      localStorage.setItem('hifz:ios-reminder-hour:v1', '20');
       return true;
     })()`);
-    await go(BASE + '/calis?kategori=prayers&icerik=subhaneke');
-    await waitFor(`document.querySelectorAll('.verse-card').length > 0`);
-    await evaluate(`(() => {
-      document.documentElement.dataset.theme = 'light';
-      window.scrollTo(0, 0);
-      return true;
-    })()`);
-    await shot(d.name, '06_namaz_dualari_acik_tema.png', '#f5f4ef');
+    await go(BASE + '/?sekme=karne');
+    await sleep(350);
+    await shot(d.name, '06_namaz_dualari_acik_tema.png', '#061412');
   }
   console.log('All 36 App Store screenshots generated successfully!');
 } catch (err) {

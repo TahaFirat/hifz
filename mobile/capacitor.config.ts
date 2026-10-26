@@ -4,12 +4,12 @@ const config: CapacitorConfig = {
   appId: 'com.tahafirat.hifz',
   appName: 'Hıfz',
   webDir: 'dist',
-  backgroundColor: '#070b10',
+  backgroundColor: '#061412',
   ios: {
     contentInset: 'never',
     allowsLinkPreview: false,
     preferredContentMode: 'mobile',
-    backgroundColor: '#070b10',
+    backgroundColor: '#061412',
   },
   plugins: {
     StatusBar: { overlaysWebView: true, style: 'DARK' },
