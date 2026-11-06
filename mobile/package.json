@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node -e \"const fs=require('fs');fs.mkdirSync('dist/calis',{recursive:true});fs.copyFileSync('dist/index.html','dist/calis/index.html')\"",
     "preview": "vite preview --port 4173",
     "cap:sync": "npm run build && npx cap sync ios"
   },

@@ -4,6 +4,64 @@ import WebKit
 import UserNotifications
 import AVFoundation
 import MediaPlayer
+import CoreSpotlight
+
+// MARK: - Native Spotlight Search Indexer (CoreSpotlight)
+final class HifzSpotlightIndexer {
+    static let shared = HifzSpotlightIndexer()
+    private let domainIdentifier = "com.tahafirat.hifz.catalog"
+
+    struct CatalogEntry {
+        let id: String
+        let title: String
+        let description: String
+        let keywords: [String]
+        let href: String
+    }
+
+    private let entries: [CatalogEntry] = [
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s1", title: "Fâtiha Suresi · Ezber & 3+3 Rabt", description: "7 ayet · Namazın temel suresi, duraklı ezber ve tecvit analizi", keywords: ["fatiha", "elham", "namaz suresi", "ezber", "hıfz"], href: "/calis?kategori=basics&icerik=s1"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=k255", title: "Âyetel Kürsî (Bakara 255) · 9 Duraklı Ezber", description: "Manalı nefes durakları, Osmanlı 3+3 Rabt koçu ve kademeli gizleme", keywords: ["ayetel kürsi", "bakara 255", "ezber", "durak"], href: "/calis?kategori=basics&icerik=k255"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=k285", title: "Âmenerrasûlü (Bakara 285-286) · Ezber Atölyesi", description: "Yatsı namazı sonrası okunan aşır, duraklı ve sondan başa zincirleme ezber", keywords: ["amenerrasulü", "bakara son iki ayet", "aşır", "ezber"], href: "/calis?kategori=basics&icerik=k285"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=k5922", title: "Hüvallâhüllezî (Haşr 22-24) · Esmâül Hüsnâ Aşırı", description: "Sabah ve akşam namazı sonrası okunan Haşr suresi son 3 ayet ezberi", keywords: ["hüvallahüllezi", "haşr", "lev enzelna", "ezber"], href: "/calis?kategori=basics&icerik=k5922"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s112", title: "İhlâs Suresi · Kalkale & Ezber", description: "Kul hüvallâhü ehad · Tecvit ve 3+3 hafızlık çalışması", keywords: ["ihlas", "kul hüvallahü", "namaz suresi"], href: "/calis?kategori=basics&icerik=s112"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s113", title: "Felak Suresi · Muavvizeteyn Ezber", description: "Kul eûzü birabbil felak · Kelime gizleme ve sesli öz-kontrol", keywords: ["felak", "muavvizeteyn", "sure ezber"], href: "/calis?kategori=basics&icerik=s113"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s114", title: "Nâs Suresi · Gunne & Ezber", description: "Kul eûzü birabbin nâs · Namaz suresi ezber atölyesi", keywords: ["nas", "kul euzü", "namaz suresi"], href: "/calis?kategori=basics&icerik=s114"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s108", title: "Kevser Suresi · Kısa Namaz Suresi", description: "İnnâ a'taynâkel kevser · Med ve gunne tecvitli ezber", keywords: ["kevser", "inna atayna", "namaz suresi"], href: "/calis?kategori=basics&icerik=s108"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s103", title: "Asr Suresi · Kısa Sure Ezberi", description: "Vel asr · Hızlı 3+3 tekrar ve sağlamlık sınaması", keywords: ["asr", "vel asr", "sure ezber"], href: "/calis?kategori=basics&icerik=s103"),
+        CatalogEntry(id: "hifz://calis?kategori=prayers&icerik=subhaneke", title: "Sübhâneke Duası · Duraklı Namaz Duası", description: "Namaz başlangıç duası · Türkçe okunuş, anlam çapası ve ezber", keywords: ["sübhaneke", "namaz duası", "dua ezber"], href: "/calis?kategori=prayers&icerik=subhaneke"),
+        CatalogEntry(id: "hifz://calis?kategori=prayers&icerik=ettehiyyatu", title: "Ettehiyyâtü Duası · Oturuş (Ka'de) Duası", description: "Namaz oturuşlarında okunan Tahiyyat duası duraklı ezberi", keywords: ["ettehiyyatü", "tahiyyat", "namaz duası"], href: "/calis?kategori=prayers&icerik=ettehiyyatu"),
+        CatalogEntry(id: "hifz://calis?kategori=prayers&icerik=salli", title: "Allâhümme Salli & Bârik Duaları", description: "Salavat duaları · Kademeli gizleme ve sesli tekrar", keywords: ["allahümme salli", "allahümme barik", "salavat"], href: "/calis?kategori=prayers&icerik=salli"),
+        CatalogEntry(id: "hifz://calis?kategori=prayers&icerik=kunut1", title: "Kunut Duaları (1 & 2) · Vitir Namazı", description: "Allâhümme innâ nesteînüke & Allâhümme iyyâke na'büdü duraklı ezber", keywords: ["kunut", "vitir", "namaz duası", "ezber"], href: "/calis?kategori=prayers&icerik=kunut1"),
+        CatalogEntry(id: "hifz://calis?kategori=all&icerik=all36", title: "Yâsîn Suresi · 5'er Ayetlik Hafızlık Planı", description: "83 ayet · Bölümlere ayrılmış 3+3 Rabt ve aralıklı tekrar", keywords: ["yasin", "yasini şerif", "hafızlık"], href: "/calis?kategori=all&icerik=all36"),
+        CatalogEntry(id: "hifz://calis?kategori=all&icerik=all67", title: "Mülk (Tebâreke) Suresi · Hafızlık Atölyesi", description: "30 ayet · Sondan başa zincirleme ve köprü testi ile ezber", keywords: ["mülk", "tebareke", "sure ezber"], href: "/calis?kategori=all&icerik=all67"),
+        CatalogEntry(id: "hifz://calis?kategori=all&icerik=all78", title: "Nebe (Amme) Suresi · 30. Cüz Ezber", description: "40 ayet · 30. cüz başlangıç suresi duraklı ezber çalışması", keywords: ["nebe", "amme", "30 cüz", "hafızlık"], href: "/calis?kategori=all&icerik=all78")
+    ]
+
+    func indexCatalog() {
+        var searchableItems: [CSSearchableItem] = []
+        for entry in entries {
+            let attr = CSSearchableItemAttributeSet(itemContentType: "public.text")
+            attr.title = entry.title
+            attr.contentDescription = entry.description
+            attr.keywords = entry.keywords
+            let item = CSSearchableItem(uniqueIdentifier: entry.id, domainIdentifier: domainIdentifier, attributeSet: attr)
+            item.expirationDate = Date.distantFuture
+            searchableItems.append(item)
+        }
+        CSSearchableIndex.default().indexSearchableItems(searchableItems, completionHandler: nil)
+    }
+
+    func resolveHref(forIdentifier identifier: String) -> String? {
+        if let match = entries.first(where: { $0.id == identifier }) {
+            return match.href
+        }
+        if identifier.hasPrefix("hifz://") {
+            return "/" + String(identifier.dropFirst("hifz://".count))
+        }
+        return nil
+    }
+}
 
 // MARK: - Native Tajweed & Prosody Engine (Compiled into Mach-O Binary)
 final class HifzTajweedProsodyEngine {
@@ -111,7 +169,8 @@ final class HifzNativeEngine: NSObject, WKScriptMessageHandler, UNUserNotificati
     func configureAudioSession() {
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .spokenAudio, options: [.allowAirPlay, .allowBluetoothA2DP])
+            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP, .allowAirPlay])
+            try session.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
             // Non-fatal if audio session is busy
         }
@@ -177,6 +236,17 @@ final class HifzNativeEngine: NSObject, WKScriptMessageHandler, UNUserNotificati
                let jsonString = String(data: data, encoding: .utf8) {
                 sendEventToWeb(name: "hifz:tajweed-result", payload: ["json": jsonString])
             }
+
+        case "computeSchedule":
+            let rating = (body["rating"] as? String) ?? "learning"
+            let streak = (body["streak"] as? Int) ?? 1
+            let nowMs = (body["nowMs"] as? Double) ?? (Date().timeIntervalSince1970 * 1000.0)
+            let schedule = HifzSpacedRepetitionKernel.shared.computeSchedule(rating: rating, currentStreak: streak, nowMs: nowMs)
+            sendEventToWeb(name: "hifz:schedule-result", payload: [
+                "nextDueTimestampMs": schedule.nextDueTimestampMs,
+                "intervalHours": schedule.intervalHours,
+                "masteryScore": schedule.masteryScore
+            ])
 
         default:
             break
@@ -282,6 +352,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         HifzNativeEngine.shared.configureAudioSession()
         HifzNativeEngine.shared.installDefaultQuickActions()
+        HifzSpotlightIndexer.shared.indexCatalog()
         return true
     }
 

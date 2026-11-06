@@ -392,13 +392,28 @@ function App() {
       else if (detail.type.endsWith('.coach')) navigateTo('/calis?kategori=basics&icerik=s1');
       else if (detail.type.endsWith('.challenge')) navigateTo('/calis?kategori=basics&icerik=s1&sina=1');
     };
+    const onSpotlightOpen = (event: Event) => {
+      const detail = (event as CustomEvent<{ href?: string }>).detail;
+      if (detail?.href) navigateTo(detail.href);
+    };
+    const onKeyCommand = (event: Event) => {
+      const detail = (event as CustomEvent<{ tab?: string }>).detail;
+      if (detail?.tab === 'home') navigateTo('/');
+      else if (detail?.tab === 'calis') navigateTo('/calis?kategori=basics&icerik=s1');
+      else if (detail?.tab === 'tecvit') navigateTo('/?sekme=tecvit');
+      else if (detail?.tab === 'karne') navigateTo('/?sekme=karne');
+    };
     window.addEventListener('popstate', onPop);
     document.addEventListener('click', onClick);
     window.addEventListener('hifz:quick-action', onQuickAction);
+    window.addEventListener('hifz:spotlight-open', onSpotlightOpen);
+    window.addEventListener('hifz:key-command', onKeyCommand);
     return () => {
       window.removeEventListener('popstate', onPop);
       document.removeEventListener('click', onClick);
       window.removeEventListener('hifz:quick-action', onQuickAction);
+      window.removeEventListener('hifz:spotlight-open', onSpotlightOpen);
+      window.removeEventListener('hifz:key-command', onKeyCommand);
     };
   }, []);
 
@@ -415,7 +430,7 @@ function App() {
       const category = k === 'prayers' || k === 'all' ? k : 'basics';
       return (
         <HifzWorkshop
-          key="calis"
+          key={`calis:${loc.search}`}
           initialChallenge={params.get('sina') === '1'}
           initialCategory={category}
           initialKey={params.get('icerik') ?? undefined}

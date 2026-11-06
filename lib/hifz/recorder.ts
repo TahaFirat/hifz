@@ -7,9 +7,12 @@ export function createRecorder(onFinish:(blob:Blob)=>void,onError:()=>void,onSta
   async start(){try{
    const incoming=await media.getUserMedia({audio:true});
    if(cancelled){incoming.getTracks().forEach(t=>t.stop());return}
-   stream=incoming;recorder=new Recorder(stream);const chunks:Blob[]=[];
+   stream=incoming;
+   const preferredMime=typeof Recorder.isTypeSupported==='function'?(['audio/mp4','audio/aac','audio/webm;codecs=opus','audio/webm'].find(m=>Recorder.isTypeSupported(m))||''):'';
+   recorder=preferredMime?new Recorder(stream,{mimeType:preferredMime}):new Recorder(stream);
+   const chunks:Blob[]=[];
    recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
-   recorder.onstop=()=>{release();if(!cancelled){if(chunks.length)onFinish(new Blob(chunks,{type:recorder?.mimeType||chunks[0].type}));else onError()}};
+   recorder.onstop=()=>{release();if(!cancelled){if(chunks.length)onFinish(new Blob(chunks,{type:recorder?.mimeType||preferredMime||chunks[0].type||'audio/mp4'}));else onError()}};
    recorder.onerror=()=>{cancelled=true;stop();onError()};
    recorder.start();onStart();timer=setTimeout(stop,180000);
   }catch{release();if(!cancelled)onError()}},

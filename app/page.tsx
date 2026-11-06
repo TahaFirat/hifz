@@ -21,10 +21,10 @@ export default function Home() {
     }
     catch { } }, []);
     return <div className="home-page">
-  <header className="home-header"><a className="brand" href="/">hıfz<span>.</span></a><ThemeToggle /></header>
+  <header className="home-header"><a className="brand" href="/">۞ Hıfz <span>Atölye</span></a><ThemeToggle /></header>
   <main className="home-content">
    <div className="home-mark" aria-hidden="true">۞</div>
-   <h1>Ezber atölyesi</h1>
+   <h1>Sure &amp; Dua Ezber Atölyesi</h1>
    <LearningHome />
    {last && <a className="resume-link" href={`/calis?kategori=${last.category}&icerik=${encodeURIComponent(last.key)}&baslangic=${last.range[0]}&bitis=${last.range[1]}`}><span>Devam et <strong>{last.name}</strong></span><ArrowRight size={19}/></a>}
    <div className="entry-grid">
