@@ -11,6 +11,10 @@ interface WebkitWindow extends Window {
   };
 }
 
+export function hasNativeBridge(): boolean {
+  return typeof window !== 'undefined' && !!(window as unknown as WebkitWindow).webkit?.messageHandlers?.hifzNative;
+}
+
 export function postNative(msg: Record<string, unknown>) {
   try {
     (window as unknown as WebkitWindow).webkit?.messageHandlers?.hifzNative?.postMessage(msg);
@@ -33,13 +37,20 @@ export function cancelNativeReminder() {
 
 export function shareNativeText(text: string) {
   postNative({ action: 'shareText', text });
-  if (typeof navigator !== 'undefined' && navigator.share) {
+  if (!hasNativeBridge() && typeof navigator !== 'undefined' && navigator.share) {
     navigator.share({ title: 'Hıfz Ezber Karnem', text }).catch(() => {});
   }
 }
 
+export function startNativeTeacher(locale: 'ar-SA' | 'tr-TR' = 'ar-SA') {
+  postNative({ action: 'startTeacher', locale });
+}
+
+export function stopNativeTeacher() {
+  postNative({ action: 'stopTeacher' });
+}
+
 export function setupNative() {
-  // Attach global tactile haptic listener for buttons and interactive cards on iOS
   document.addEventListener(
     'click',
     (e) => {
@@ -54,7 +65,8 @@ export function setupNative() {
   if (!Capacitor.isNativePlatform()) return;
   document.documentElement.classList.add('native-app');
   const apply = () => {
-    const light = document.documentElement.dataset.theme === 'light';
+    const light = document.documentElement.dataset.theme !== 'dark';
+    // Style.Light gives dark status bar icons on light background; Style.Dark gives white icons on dark background
     StatusBar.setStyle({ style: light ? Style.Light : Style.Dark }).catch(() => {});
   };
   apply();

@@ -21,10 +21,11 @@ export function reverseFrame(step:number,total:number):number[] {
 export function cueMask(level:number,index:number):boolean {return level===0?false:level===1?index%2===1:true;}
 export function bridgeMask(index:number,count:number):boolean {return index>0&&index<count-1;}
 export const methods=[
-    {id:'list',label:'📜 Duraklı Liste',description:'Kısa ayetleri bütün, uzun metinleri anlamlı bölümler hâlinde çalış.'},
-    {id:'coach',label:'🕌 Hafız Koçu · 3+3',description:'Üç kez bakarak, üç kez ezberden oku; öğrendiğin bölümleri iki kez birbirine bağla.'},
-    {id:'reverse',label:'🔄 Sondan Başa Zincir',description:'Son bölümden başla; her adımda bir öncekini ekleyip öğrendiklerinle birleştir.'},
-    {id:'order',label:'🧩 Sıralama ve Köprü',description:'Karışık seçeneklerden sıradaki ayeti veya durağı seçerek metni tamamla.'},
+    {id:'list',label:'🫁 Duraklı & İpucu',short:'5 kademe gizleme',description:'Kısa ayetleri bütün, uzun metinleri nefes duraklarına bölerek 5 kademeli gizlemeyle çalış.'},
+    {id:'teacher',label:'🎙️ Sanal Hoca',short:'Sesli ezber kontrolü',description:'Mikrofonu açıp ezberden oku; doğru okuduğun her kelime anında açılır, takılınca Fetih ipucu al.'},
+    {id:'coach',label:'🕌 Hafız Koçu 3+3',short:'Yüzünden · Ezbere · Rabt',description:'Üç kez bakarak, üç kez ezberden oku; öğrendiğin bölümleri iki kez birbirine bağla (rabt).'},
+    {id:'reverse',label:'🔄 Sondan Başa',short:'Ters zincirleme',description:'Son bölümden başla; her adımda bir öncekini ekleyip bildiğin sağlam zemine doğru birleştir.'},
+    {id:'order',label:'🧩 Köprü Testi',short:'Ayet sırası sınavı',description:'Karışık seçeneklerden sıradaki ayeti veya durağı seçerek geçiş köprülerini sağlamlaştır.'},
 ] as const;
 
 export const ayahLevels=[

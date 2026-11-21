@@ -1,13 +1,20 @@
 <!doctype html>
-<html lang="tr">
+<html lang="tr" data-theme="light" data-mushaf-font="husrev">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="format-detection" content="telephone=no" />
     <title>Hıfz — Sure &amp; Dua Ezber Atölyesi</title>
-    <meta name="description" content="Ayet satırları, ipuçları ve tekrar modlarıyla sure ve dua çalışın." />
+    <meta name="description" content="Ahmed Hüsrev hattı, 5 ezber metodu ve Sanal Hoca ile sure ve dua ezber atölyesi." />
     <script>
-      try{var t=localStorage.getItem('hifz:theme')==='light'?'light':'dark';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){}
+      try {
+        var savedTheme = localStorage.getItem('hifz:theme');
+        var t = savedTheme === 'dark' ? 'dark' : 'light';
+        document.documentElement.dataset.theme = t;
+        document.documentElement.style.colorScheme = t;
+        var f = localStorage.getItem('hifz:mushaf-font:v1');
+        document.documentElement.dataset.mushafFont = (f === 'amiri' || f === 'naskh') ? f : 'husrev';
+      } catch (e) {}
     </script>
   </head>
   <body>

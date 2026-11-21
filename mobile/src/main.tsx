@@ -11,9 +11,10 @@ import '@/app/reading.css';
 import './native.css';
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Calendar, BookOpenCheck, Sparkles, BarChart3, Bell, BellOff, Share2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Calendar, BookOpenCheck, Sparkles, BarChart3, Bell, BellOff, Share2, ArrowRight, CheckCircle2, HelpCircle, Mic } from 'lucide-react';
 import Home from '@/app/page';
 import HifzWorkshop from '@/components/HifzWorkshop';
+import MethodGuideModal, { type GuideMethodKey } from '@/components/MethodGuideModal';
 import useReviews from '@/components/useReviews';
 import { basics, prayerCatalog } from '@/lib/hifz/catalog';
 import {
@@ -37,7 +38,7 @@ const getLoc = (): LocState => {
   const tab = params.get('sekme');
   if (tab === 'tecvit') return { route: 'tecvit', search: window.location.search };
   if (tab === 'karne') return { route: 'karne', search: window.location.search };
-  if (path.endsWith('/calis') || params.has('icerik') || params.has('kategori')) {
+  if (path.endsWith('/calis') || params.has('icerik') || params.has('kategori') || params.has('mod')) {
     return { route: 'calis', search: window.location.search };
   }
   return { route: 'home', search: window.location.search };
@@ -47,27 +48,27 @@ const TAJWEED_RULES = [
   {
     id: 'qalqalah',
     title: 'Kalkale (Kutbu Ced — ق ط ب ج د)',
-    color: '#fbbf24',
+    color: '#d97706',
     summary: 'ق ط ب ج د harfleri cezimli (sükûnlu) geldiğinde veya durak sonunda sesin hafifçe çarptırılarak yankılanmasıdır.',
-    arabic: 'قُلْ هُوَ اللّٰهُ اَحَدٌ ۝ اللّٰهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ',
+    arabic: 'قُلْ هُوَ اللّٰهُ اَحَدٌ ۝ اَللّٰهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ',
     highlightNote: 'İhlâs Suresi durak sonlarındaki د (Dâl) harfleri Kalkale-i Kübrâ ile okunur.',
-    practiceHref: '/calis?kategori=basics&icerik=s112',
-    practiceLabel: 'İhlâs Suresinde Çalış',
+    practiceHref: '/calis?kategori=basics&icerik=s112&mod=teacher',
+    practiceLabel: 'İhlâs Suresinde Sanal Hocayla Dene',
   },
   {
     id: 'ghunnah',
     title: 'Gunne & Şeddeli Nûn / Mîm (نّ / مّ)',
-    color: '#34d399',
+    color: '#059669',
     summary: 'Şeddeli Nûn (نّ) ve Şeddeli Mîm (مّ) harflerinde ses genizden 1.5 elif miktarı tutularak akıtılır.',
     arabic: 'اِنَّآ اَعْطَيْنَاكَ الْكَوْثَرَ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ',
     highlightNote: 'اِنَّا ve النَّاسِ kelimelerindeki şeddeli نّ harfleri tam gunne ile tutulur.',
-    practiceHref: '/calis?kategori=basics&icerik=s108',
-    practiceLabel: 'Kevser Suresinde Çalış',
+    practiceHref: '/calis?kategori=basics&icerik=s108&mod=coach',
+    practiceLabel: 'Kevser Suresinde 3+3 Çalış',
   },
   {
     id: 'madd',
     title: 'Medd-i Muttasıl & Munfasıl (آ / ٓ )',
-    color: '#38bdf8',
+    color: '#0284c7',
     summary: 'Harf-i medden sonra hemze geldiğinde ses 4 elif miktarı uzatılarak kıraat dengesi korunur.',
     arabic: 'اِذَا جَآءَ نَصْرُ اللّٰهِ وَالْفَتْحُ ۝ لَآ اَعْبُدُ مَا تَعْبُدُونَ',
     highlightNote: 'جَآءَ (Muttasıl) ve لَآ اَعْبُدُ (Munfasıl) uzatmaları nefes durağı ritmini belirler.',
@@ -77,7 +78,7 @@ const TAJWEED_RULES = [
   {
     id: 'idgham',
     title: 'İdğam & İhfâ Geçişleri (Tenvin / Sâkin Nûn)',
-    color: '#a78bfa',
+    color: '#7c3aed',
     summary: 'Sâkin Nûn veya tenvinden sonra gelen harfe göre sesin gunneli/gunnesiz kaynaştırılması veya gizlenmesidir.',
     arabic: 'وَيْلٌ لِكُلِّ هُمَزَةٍ لُمَزَةٍ ۝ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ',
     highlightNote: 'هُمَزَةٍ لُمَزَةٍ (İdğam-ı Bilâ Gunne) ve مِنْ شَرِّ (İhfâ) geçişlerine dikkat edilir.',
@@ -86,12 +87,17 @@ const TAJWEED_RULES = [
   },
 ];
 
-function TajweedStudio({ onNavigate }: { onNavigate: (href: string) => void }) {
+function TajweedStudio({
+  onNavigate,
+  onOpenGuide,
+}: {
+  onNavigate: (href: string) => void;
+  onOpenGuide: (key?: GuideMethodKey) => void;
+}) {
   const [selectedRule, setSelectedRule] = useState(TAJWEED_RULES[0].id);
   const [customArabic, setCustomArabic] = useState('قُلْ اَعُوذُ بِرَبِّ الْفَلَقِ مِنْ شَرِّ مَا خَلَقَ');
 
-  const countMatches = (text: string, chars: string[]) =>
-    chars.reduce((acc, ch) => acc + (text.split(ch).length - 1), 0);
+  const countMatches = (text: string, chars: string[]) => chars.reduce((acc, ch) => acc + (text.split(ch).length - 1), 0);
 
   const qalqalahHits = countMatches(customArabic, ['ق', 'ط', 'ب', 'ج', 'د']);
   const ghunnahHits = countMatches(customArabic, ['نّ', 'مّ', 'ً', 'ٍ', 'ٌ']);
@@ -100,12 +106,19 @@ function TajweedStudio({ onNavigate }: { onNavigate: (href: string) => void }) {
   return (
     <div className="ios-studio-page">
       <section className="ios-hero-banner">
-        <span className="ios-hero-badge">
-          <Sparkles size={13} /> Hıfz Tecvit &amp; Mahreç Laboratuvarı
-        </span>
-        <h1>Renkli Tecvit Rehberi &amp; Ayet Analizi</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span className="ios-hero-badge">
+            <Sparkles size={13} /> Hıfz Tecvit &amp; Mahreç Laboratuvarı
+          </span>
+          <button type="button" className="guide-header-pill" onClick={() => onOpenGuide('teacher')}>
+            <HelpCircle size={14} />
+            <span>Metot Rehberi</span>
+          </button>
+        </div>
+        <h1>Ahmed Hüsrev Hattı ile Tecvit &amp; Ayet Analizi</h1>
         <p>
-          Ezber yaparken kelimeleri doğru mahreç ve uzatmalarla yerleştirmek, yanlış ezberi sonradan düzeltmekten çok daha kolaydır. Aşağıdaki kuralları inceleyip doğrudan ilgili surede 3+3 Rabt koçuyla uygulayabilirsin.
+          Ezber yaparken harfleri doğru mahreç ve uzatmalarla yerleştirmek, yanlış ezberi sonradan düzeltmekten çok daha kolaydır. Kuralları inceleyip doğrudan{' '}
+          <strong>Sanal Hoca</strong> veya <strong>3+3 Rabt Koçu</strong> ile uygulayabilirsin.
         </p>
       </section>
 
@@ -119,29 +132,19 @@ function TajweedStudio({ onNavigate }: { onNavigate: (href: string) => void }) {
           dir="rtl"
           lang="ar"
           aria-label="Tecvit analizi için Arapça ayet metni"
-          style={{
-            width: '100%',
-            padding: '12px 14px',
-            borderRadius: '10px',
-            border: '1px solid var(--line)',
-            background: 'var(--tile)',
-            color: 'var(--text)',
-            fontFamily: "'Noto Naskh Arabic', Amiri, serif",
-            fontSize: '26px',
-            textAlign: 'right',
-          }}
+          className="husrev-input"
         />
         <div className="ios-stat-grid">
           <div className="ios-stat-card">
-            <strong style={{ color: '#fbbf24' }}>{qalqalahHits}</strong>
+            <strong style={{ color: '#d97706' }}>{qalqalahHits}</strong>
             <span>Kalkale Harfi (ق ط ب ج د)</span>
           </div>
           <div className="ios-stat-card">
-            <strong style={{ color: '#34d399' }}>{ghunnahHits}</strong>
+            <strong style={{ color: '#059669' }}>{ghunnahHits}</strong>
             <span>Gunne / Tenvin İzi</span>
           </div>
           <div className="ios-stat-card">
-            <strong style={{ color: '#38bdf8' }}>{maddHits}</strong>
+            <strong style={{ color: '#0284c7' }}>{maddHits}</strong>
             <span>Med / Uzatma İşareti</span>
           </div>
         </div>
@@ -163,7 +166,9 @@ function TajweedStudio({ onNavigate }: { onNavigate: (href: string) => void }) {
               {selectedRule === rule.id && <CheckCircle2 size={17} color={rule.color} />}
             </div>
             <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>{rule.summary}</p>
-            <div className="tajweed-arabic-sample">{rule.arabic}</div>
+            <div className="tajweed-arabic-sample" lang="ar" dir="rtl">
+              {rule.arabic}
+            </div>
             <small style={{ color: 'var(--text)', opacity: 0.85, fontSize: 12 }}>💡 {rule.highlightNote}</small>
             <div style={{ marginTop: 6, display: 'flex', justifyContent: 'flex-end' }}>
               <button
@@ -186,8 +191,22 @@ function TajweedStudio({ onNavigate }: { onNavigate: (href: string) => void }) {
   );
 }
 
-function MasteryDashboard({ onNavigate }: { onNavigate: (href: string) => void }) {
+function MasteryDashboard({
+  onNavigate,
+  onOpenGuide,
+}: {
+  onNavigate: (href: string) => void;
+  onOpenGuide: (key?: GuideMethodKey) => void;
+}) {
   const { records } = useReviews();
+  const [mushafFont, setMushafFont] = useState<'husrev' | 'amiri' | 'naskh'>(() => {
+    try {
+      const saved = localStorage.getItem('hifz:mushaf-font:v1');
+      return saved === 'amiri' || saved === 'naskh' ? saved : 'husrev';
+    } catch {
+      return 'husrev';
+    }
+  });
   const [reminderEnabled, setReminderEnabled] = useState(() => {
     try {
       return localStorage.getItem('hifz:ios-reminder:v1') === '1';
@@ -215,6 +234,15 @@ function MasteryDashboard({ onNavigate }: { onNavigate: (href: string) => void }
     hardUnitsCount = Object.keys(raw).filter((k) => raw[k] === true).length;
   } catch {}
 
+  const applyFont = (f: 'husrev' | 'amiri' | 'naskh') => {
+    triggerHaptic('selection');
+    setMushafFont(f);
+    document.documentElement.dataset.mushafFont = f;
+    try {
+      localStorage.setItem('hifz:mushaf-font:v1', f);
+    } catch {}
+  };
+
   const toggleReminder = () => {
     const next = !reminderEnabled;
     setReminderEnabled(next);
@@ -233,19 +261,25 @@ function MasteryDashboard({ onNavigate }: { onNavigate: (href: string) => void }
 
   const handleShare = () => {
     triggerHaptic('medium');
-    const summary = `🕌 Hıfz Ezber Karnem:\n• Sağlam Ezberlenen: ${solidCount} ayet/dua\n• Öğrenilen: ${learningCount} ayet/dua\n• Toplam Çalışılan: ${allRecords.length} kayıt\nOsmanlı 3+3 & Rabt metoduyla Hıfz'da çalışıyorum.`;
+    const summary = `🕌 Hıfz Ezber Karnem:\n• Sağlam Ezberlenen: ${solidCount} ayet/dua\n• Aktif Çalışılan: ${learningCount + againCount} ayet/dua\n• Toplam Çalışılan: ${allRecords.length} kayıt\nAhmed Hüsrev hattı ve Sanal Hoca ile Hıfz'da çalışıyorum.`;
     shareNativeText(summary);
   };
 
   return (
     <div className="ios-studio-page">
       <section className="ios-hero-banner">
-        <span className="ios-hero-badge">
-          <BarChart3 size={13} /> Kişisel Ezber Karnesi &amp; Hatırlatıcı
-        </span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span className="ios-hero-badge">
+            <BarChart3 size={13} /> Kişisel Ezber Karnesi &amp; Ayarlar
+          </span>
+          <button type="button" className="guide-header-pill" onClick={() => onOpenGuide('srs')}>
+            <HelpCircle size={14} />
+            <span>Metot Rehberi</span>
+          </button>
+        </div>
         <h1>Ezber İlerleme Raporum</h1>
         <p>
-          Aralıklı tekrar (Spaced Repetition) algoritmasıyla işaretlediğin tüm sure, aşır ve namaz dualarının sağlamlık dağılımı.
+          Aralıklı tekrar (SM-2) ve Sanal Hoca değerlendirmeleriyle çalıştığın tüm sure, aşır ve namaz dualarının sağlamlık dağılımı.
         </p>
       </section>
 
@@ -255,14 +289,40 @@ function MasteryDashboard({ onNavigate }: { onNavigate: (href: string) => void }
           <span>Sağlam Ezber</span>
         </div>
         <div className="ios-stat-card">
-          <strong style={{ color: '#f59e0b' }}>{learningCount + againCount}</strong>
+          <strong style={{ color: '#d97706' }}>{learningCount + againCount}</strong>
           <span>Aktif Çalışılan</span>
         </div>
         <div className="ios-stat-card">
-          <strong style={{ color: '#38bdf8' }}>{hardUnitsCount}</strong>
+          <strong style={{ color: '#0284c7' }}>{hardUnitsCount}</strong>
           <span>Zorlanılan Durak</span>
         </div>
       </div>
+
+      {/* Mushaf Calligraphy Preference Card */}
+      <section className="ios-card">
+        <h2>
+          <span>🖋️ Kur&apos;an-ı Kerim Hat Seçimi</span>
+          <span style={{ fontSize: 12, color: 'var(--gold)' }}>
+            {mushafFont === 'husrev' ? 'Ahmed Hüsrev Hattı' : mushafFont === 'amiri' ? 'Klasik Amiri' : 'Medine Nesih'}
+          </span>
+        </h2>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {[
+            { id: 'husrev', label: 'Ahmed Hüsrev Altınbaşak' },
+            { id: 'amiri', label: 'Klasik Amiri' },
+            { id: 'naskh', label: 'Medine Nesih' },
+          ].map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className={mushafFont === f.id ? 'ios-action-btn' : 'ios-secondary-btn'}
+              onClick={() => applyFont(f.id as 'husrev' | 'amiri' | 'naskh')}
+            >
+              <span>{f.label}</span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="ios-card">
         <h2>
@@ -326,13 +386,11 @@ function MasteryDashboard({ onNavigate }: { onNavigate: (href: string) => void }
               <button
                 key={item.key}
                 type="button"
-                onClick={() =>
-                  onNavigate(`/calis?kategori=${item.kind === 'prayer' ? 'prayers' : 'basics'}&icerik=${item.key}`)
-                }
+                onClick={() => onNavigate(`/calis?kategori=${item.kind === 'prayer' ? 'prayers' : 'basics'}&icerik=${item.key}`)}
                 style={{
                   background: 'var(--tile)',
                   border: '1px solid var(--line)',
-                  borderRadius: 10,
+                  borderRadius: 12,
                   padding: '10px 12px',
                   textAlign: 'left',
                   display: 'flex',
@@ -355,6 +413,34 @@ function MasteryDashboard({ onNavigate }: { onNavigate: (href: string) => void }
 
 function App() {
   const [loc, setLoc] = useState<LocState>(getLoc);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideMethod, setGuideMethod] = useState<GuideMethodKey>('teacher');
+  const [isFirstLaunch, setIsFirstLaunch] = useState(false);
+
+  useEffect(() => {
+    try {
+      const f = localStorage.getItem('hifz:mushaf-font:v1');
+      document.documentElement.dataset.mushafFont = f === 'amiri' || f === 'naskh' ? f : 'husrev';
+      if (localStorage.getItem('hifz:guide-seen:v2') !== '1') {
+        setIsFirstLaunch(true);
+        setGuideMethod('teacher');
+        setGuideOpen(true);
+      }
+    } catch {}
+  }, []);
+
+  const openGuide = (key: GuideMethodKey = 'teacher') => {
+    setIsFirstLaunch(false);
+    setGuideMethod(key);
+    setGuideOpen(true);
+  };
+
+  const closeGuide = () => {
+    setGuideOpen(false);
+    try {
+      localStorage.setItem('hifz:guide-seen:v2', '1');
+    } catch {}
+  };
 
   const navigateTo = (href: string) => {
     const url = new URL(href, window.location.origin);
@@ -381,15 +467,14 @@ function App() {
         if (cleanPath !== '/' && cleanPath !== '/calis') return;
         event.preventDefault();
         navigateTo(cleanPath + url.search + url.hash);
-      } catch {
-        // Ignore malformed hrefs
-      }
+      } catch {}
     };
     const onQuickAction = (event: Event) => {
       const detail = (event as CustomEvent<{ type?: string }>).detail;
       if (!detail?.type) return;
-      if (detail.type.endsWith('.daily')) navigateTo('/calis?kategori=basics&icerik=s1&gunluk=1');
-      else if (detail.type.endsWith('.coach')) navigateTo('/calis?kategori=basics&icerik=s1');
+      if (detail.type.endsWith('.teacher')) navigateTo('/calis?kategori=basics&icerik=s1&mod=teacher');
+      else if (detail.type.endsWith('.daily')) navigateTo('/calis?kategori=basics&icerik=s1&gunluk=1');
+      else if (detail.type.endsWith('.coach')) navigateTo('/calis?kategori=basics&icerik=s1&mod=coach');
       else if (detail.type.endsWith('.challenge')) navigateTo('/calis?kategori=basics&icerik=s1&sina=1');
     };
     const onSpotlightOpen = (event: Event) => {
@@ -419,10 +504,10 @@ function App() {
 
   const renderContent = () => {
     if (loc.route === 'tecvit') {
-      return <TajweedStudio key="tecvit" onNavigate={navigateTo} />;
+      return <TajweedStudio key="tecvit" onNavigate={navigateTo} onOpenGuide={openGuide} />;
     }
     if (loc.route === 'karne') {
-      return <MasteryDashboard key="karne" onNavigate={navigateTo} />;
+      return <MasteryDashboard key="karne" onNavigate={navigateTo} onOpenGuide={openGuide} />;
     }
     if (loc.route === 'calis') {
       const params = new URLSearchParams(loc.search);
@@ -436,15 +521,26 @@ function App() {
           initialKey={params.get('icerik') ?? undefined}
           initialStart={params.get('baslangic') ?? undefined}
           initialEnd={params.get('bitis') ?? undefined}
+          initialMode={params.get('mod') ?? undefined}
+          onOpenGuide={openGuide}
         />
       );
     }
-    return <Home key="home" />;
+    return <Home key="home" onOpenGuide={openGuide} />;
   };
+
+  const isTeacherActive = loc.route === 'calis' && new URLSearchParams(loc.search).get('mod') === 'teacher';
 
   return (
     <>
       {renderContent()}
+      <MethodGuideModal
+        open={guideOpen}
+        initialMethod={guideMethod}
+        isFirstLaunch={isFirstLaunch}
+        onClose={closeGuide}
+        onNavigate={navigateTo}
+      />
       <nav className="ios-tabbar" aria-label="Hıfz Ana Sekmeler">
         <button
           type="button"
@@ -457,12 +553,21 @@ function App() {
         </button>
         <button
           type="button"
-          className={loc.route === 'calis' ? 'active' : ''}
-          aria-pressed={loc.route === 'calis'}
+          className={loc.route === 'calis' && !isTeacherActive ? 'active' : ''}
+          aria-pressed={loc.route === 'calis' && !isTeacherActive}
           onClick={() => navigateTo('/calis?kategori=basics&icerik=s1')}
         >
           <BookOpenCheck size={20} />
           <span>Ezber Atölyesi</span>
+        </button>
+        <button
+          type="button"
+          className={isTeacherActive ? 'active' : ''}
+          aria-pressed={isTeacherActive}
+          onClick={() => navigateTo('/calis?kategori=basics&icerik=s1&mod=teacher')}
+        >
+          <Mic size={20} />
+          <span>Sanal Hoca</span>
         </button>
         <button
           type="button"
@@ -471,7 +576,7 @@ function App() {
           onClick={() => navigateTo('/?sekme=tecvit')}
         >
           <Sparkles size={20} />
-          <span>Tecvit &amp; Mahreç</span>
+          <span>Tecvit</span>
         </button>
         <button
           type="button"
@@ -480,7 +585,7 @@ function App() {
           onClick={() => navigateTo('/?sekme=karne')}
         >
           <BarChart3 size={20} />
-          <span>Ezber Karnem</span>
+          <span>Karnem</span>
         </button>
       </nav>
     </>

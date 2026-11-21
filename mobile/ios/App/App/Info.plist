@@ -30,7 +30,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Kendi ezber okuyuşunuzu kaydedip örnek tilavet ile karşılaştırabilmeniz için mikrofon izni kullanılır. Ses kaydınız sunucuya gönderilmez, yalnızca cihazınızda geçici olarak tutulur.</string>
+	<string>Sanal Hoca modunda ezberinizi sesli dinletmek ve kendi okuyuşunuzu örnek tilavet ile karşılaştırabilmek için mikrofon izni kullanılır. Sesiniz sunucularımızda saklanmaz.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Sanal Hoca modunda ezberden okuduğunuz sure ve duaları kelime kelime takip edip doğru/hatalı yerleri anında gösterebilmek için konuşma tanıma izni kullanılır.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

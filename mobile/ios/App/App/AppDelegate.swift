@@ -5,6 +5,7 @@ import UserNotifications
 import AVFoundation
 import MediaPlayer
 import CoreSpotlight
+import Speech
 
 // MARK: - Native Spotlight Search Indexer (CoreSpotlight)
 final class HifzSpotlightIndexer {
@@ -20,11 +21,11 @@ final class HifzSpotlightIndexer {
     }
 
     private let entries: [CatalogEntry] = [
-        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s1", title: "Fâtiha Suresi · Ezber & 3+3 Rabt", description: "7 ayet · Namazın temel suresi, duraklı ezber ve tecvit analizi", keywords: ["fatiha", "elham", "namaz suresi", "ezber", "hıfz"], href: "/calis?kategori=basics&icerik=s1"),
-        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=k255", title: "Âyetel Kürsî (Bakara 255) · 9 Duraklı Ezber", description: "Manalı nefes durakları, Osmanlı 3+3 Rabt koçu ve kademeli gizleme", keywords: ["ayetel kürsi", "bakara 255", "ezber", "durak"], href: "/calis?kategori=basics&icerik=k255"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s1", title: "Fâtiha Suresi · Ezber & Sanal Hoca", description: "7 ayet · Ahmed Hüsrev hattı, duraklı ezber ve Sanal Hoca sesli kontrol", keywords: ["fatiha", "elham", "namaz suresi", "ezber", "sanal hoca", "hıfz"], href: "/calis?kategori=basics&icerik=s1"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=k255", title: "Âyetel Kürsî (Bakara 255) · 9 Duraklı Ezber", description: "Manalı nefes durakları, Osmanlı 3+3 Rabt koçu ve Sanal Hoca ezber testi", keywords: ["ayetel kürsi", "bakara 255", "ezber", "durak"], href: "/calis?kategori=basics&icerik=k255"),
         CatalogEntry(id: "hifz://calis?kategori=basics&icerik=k285", title: "Âmenerrasûlü (Bakara 285-286) · Ezber Atölyesi", description: "Yatsı namazı sonrası okunan aşır, duraklı ve sondan başa zincirleme ezber", keywords: ["amenerrasulü", "bakara son iki ayet", "aşır", "ezber"], href: "/calis?kategori=basics&icerik=k285"),
         CatalogEntry(id: "hifz://calis?kategori=basics&icerik=k5922", title: "Hüvallâhüllezî (Haşr 22-24) · Esmâül Hüsnâ Aşırı", description: "Sabah ve akşam namazı sonrası okunan Haşr suresi son 3 ayet ezberi", keywords: ["hüvallahüllezi", "haşr", "lev enzelna", "ezber"], href: "/calis?kategori=basics&icerik=k5922"),
-        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s112", title: "İhlâs Suresi · Kalkale & Ezber", description: "Kul hüvallâhü ehad · Tecvit ve 3+3 hafızlık çalışması", keywords: ["ihlas", "kul hüvallahü", "namaz suresi"], href: "/calis?kategori=basics&icerik=s112"),
+        CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s112", title: "İhlâs Suresi · Kalkale & Ezber", description: "Kul hüvallâhü ehad · Tecvit ve Sanal Hoca ile ezber verme", keywords: ["ihlas", "kul hüvallahü", "namaz suresi"], href: "/calis?kategori=basics&icerik=s112"),
         CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s113", title: "Felak Suresi · Muavvizeteyn Ezber", description: "Kul eûzü birabbil felak · Kelime gizleme ve sesli öz-kontrol", keywords: ["felak", "muavvizeteyn", "sure ezber"], href: "/calis?kategori=basics&icerik=s113"),
         CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s114", title: "Nâs Suresi · Gunne & Ezber", description: "Kul eûzü birabbin nâs · Namaz suresi ezber atölyesi", keywords: ["nas", "kul euzü", "namaz suresi"], href: "/calis?kategori=basics&icerik=s114"),
         CatalogEntry(id: "hifz://calis?kategori=basics&icerik=s108", title: "Kevser Suresi · Kısa Namaz Suresi", description: "İnnâ a'taynâkel kevser · Med ve gunne tecvitli ezber", keywords: ["kevser", "inna atayna", "namaz suresi"], href: "/calis?kategori=basics&icerik=s108"),
@@ -60,6 +61,164 @@ final class HifzSpotlightIndexer {
             return "/" + String(identifier.dropFirst("hifz://".count))
         }
         return nil
+    }
+}
+
+// MARK: - Native Virtual Hifz Teacher (Real-Time SFSpeechRecognizer Recitation Verifier)
+final class HifzVirtualTeacherEngine {
+    static let shared = HifzVirtualTeacherEngine()
+
+    private let audioEngine = AVAudioEngine()
+    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    private var recognitionTask: SFSpeechRecognitionTask?
+    private var hasTapInstalled = false
+    private var activeSessionId = 0
+    private var lastLevelEmitTime: TimeInterval = 0
+
+    func startSession(localeIdentifier: String) {
+        DispatchQueue.main.async {
+            self.stopSession(silent: true)
+            self.activeSessionId += 1
+            let currentId = self.activeSessionId
+
+            SFSpeechRecognizer.requestAuthorization { authStatus in
+                guard authStatus == .authorized else {
+                    HifzNativeEngine.shared.sendEventToWeb(name: "hifz:teacher-status", payload: [
+                        "state": "permission-denied",
+                        "reason": "speech"
+                    ])
+                    return
+                }
+
+                AVAudioSession.sharedInstance().requestRecordPermission { micGranted in
+                    guard micGranted else {
+                        HifzNativeEngine.shared.sendEventToWeb(name: "hifz:teacher-status", payload: [
+                            "state": "permission-denied",
+                            "reason": "microphone"
+                        ])
+                        return
+                    }
+
+                    DispatchQueue.main.async {
+                        guard currentId == self.activeSessionId else { return }
+                        self.beginAudioStream(localeIdentifier: localeIdentifier, sessionId: currentId)
+                    }
+                }
+            }
+        }
+    }
+
+    private func beginAudioStream(localeIdentifier: String, sessionId: Int) {
+        let primaryRecognizer = SFSpeechRecognizer(locale: Locale(identifier: localeIdentifier))
+        let fallbackRecognizer = localeIdentifier.hasPrefix("ar")
+            ? SFSpeechRecognizer(locale: Locale(identifier: "ar"))
+            : SFSpeechRecognizer(locale: Locale(identifier: "tr-TR"))
+
+        guard let recognizer = (primaryRecognizer?.isAvailable == true ? primaryRecognizer : fallbackRecognizer),
+              recognizer.isAvailable else {
+            HifzNativeEngine.shared.sendEventToWeb(name: "hifz:teacher-status", payload: [
+                "state": "unavailable"
+            ])
+            return
+        }
+
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .allowBluetooth])
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+
+            let req = SFSpeechAudioBufferRecognitionRequest()
+            req.shouldReportPartialResults = true
+            self.recognitionRequest = req
+
+            let inputNode = audioEngine.inputNode
+            if hasTapInstalled {
+                inputNode.removeTap(onBus: 0)
+                hasTapInstalled = false
+            }
+
+            let format = inputNode.outputFormat(forBus: 0)
+            guard format.sampleRate > 0 && format.channelCount > 0 else {
+                HifzNativeEngine.shared.sendEventToWeb(name: "hifz:teacher-status", payload: ["state": "error"])
+                return
+            }
+
+            inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
+                guard let self = self else { return }
+                self.recognitionRequest?.append(buffer)
+
+                let now = Date().timeIntervalSince1970
+                if now - self.lastLevelEmitTime >= 0.14,
+                   let channelData = buffer.floatChannelData?[0] {
+                    self.lastLevelEmitTime = now
+                    let frameLength = Int(buffer.frameLength)
+                    if frameLength > 0 {
+                        var sum: Float = 0
+                        for i in stride(from: 0, to: frameLength, by: 4) {
+                            let sample = channelData[i]
+                            sum += sample * sample
+                        }
+                        let rms = sqrt(sum / Float(max(1, frameLength / 4)))
+                        let normalized = min(1.0, max(0.0, Double(rms * 14.0)))
+                        HifzNativeEngine.shared.sendEventToWeb(name: "hifz:teacher-level", payload: ["level": normalized])
+                    }
+                }
+            }
+            hasTapInstalled = true
+
+            audioEngine.prepare()
+            try audioEngine.start()
+
+            HifzNativeEngine.shared.triggerHaptic(style: "light")
+            HifzNativeEngine.shared.sendEventToWeb(name: "hifz:teacher-status", payload: [
+                "state": "listening",
+                "locale": localeIdentifier
+            ])
+
+            recognitionTask = recognizer.recognitionTask(with: req) { [weak self] result, error in
+                guard let self = self, sessionId == self.activeSessionId else { return }
+
+                if let result = result {
+                    let transcript = result.bestTranscription.formattedString
+                    HifzNativeEngine.shared.sendEventToWeb(name: "hifz:teacher-transcript", payload: [
+                        "text": transcript,
+                        "isFinal": result.isFinal,
+                        "sessionId": sessionId
+                    ])
+                }
+
+                if error != nil || (result?.isFinal == true) {
+                    DispatchQueue.main.async {
+                        guard sessionId == self.activeSessionId else { return }
+                        self.stopSession(silent: false)
+                    }
+                }
+            }
+        } catch {
+            stopSession(silent: true)
+            HifzNativeEngine.shared.sendEventToWeb(name: "hifz:teacher-status", payload: ["state": "error"])
+        }
+    }
+
+    func stopSession(silent: Bool) {
+        activeSessionId += 1
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        if hasTapInstalled {
+            audioEngine.inputNode.removeTap(onBus: 0)
+            hasTapInstalled = false
+        }
+        recognitionRequest?.endAudio()
+        recognitionRequest = nil
+        recognitionTask?.cancel()
+        recognitionTask = nil
+
+        HifzNativeEngine.shared.configureAudioSession()
+
+        if !silent {
+            HifzNativeEngine.shared.sendEventToWeb(name: "hifz:teacher-status", payload: ["state": "stopped"])
+        }
     }
 }
 
@@ -101,13 +260,13 @@ final class HifzTajweedProsodyEngine {
 
         var results: [TajweedHighlight] = []
         if maddCount > 0 {
-            results.append(TajweedHighlight(rule: "madd", labelTr: "Med (Uzatma)", colorHex: "#38bdf8", count: maddCount))
+            results.append(TajweedHighlight(rule: "madd", labelTr: "Med (Uzatma)", colorHex: "#0284c7", count: maddCount))
         }
         if ghunnahCount > 0 {
-            results.append(TajweedHighlight(rule: "ghunnah", labelTr: "Gunne / Tenvin", colorHex: "#34d399", count: ghunnahCount))
+            results.append(TajweedHighlight(rule: "ghunnah", labelTr: "Gunne / Tenvin", colorHex: "#059669", count: ghunnahCount))
         }
         if qalqalahCount > 0 {
-            results.append(TajweedHighlight(rule: "qalqalah", labelTr: "Kalkale Harfi", colorHex: "#fbbf24", count: qalqalahCount))
+            results.append(TajweedHighlight(rule: "qalqalah", labelTr: "Kalkale Harfi", colorHex: "#d97706", count: qalqalahCount))
         }
         return results
     }
@@ -130,7 +289,7 @@ final class HifzSpacedRepetitionKernel {
 
         switch rating {
         case "again":
-            hours = 0.25 // 15 minutes
+            hours = 0.25
             mastery = max(10, clampedStreak * 10)
         case "learning":
             hours = Double(max(6, clampedStreak * 12))
@@ -149,7 +308,7 @@ final class HifzSpacedRepetitionKernel {
     }
 }
 
-// MARK: - Native iOS Bridge (Haptics, Local Notifications, Now Playing, Quick Actions, Share Sheet)
+// MARK: - Native iOS Bridge (Haptics, Virtual Teacher, Notifications, Now Playing, Quick Actions, Share Sheet)
 final class HifzNativeEngine: NSObject, WKScriptMessageHandler, UNUserNotificationCenterDelegate {
     static let shared = HifzNativeEngine()
     weak var webView: WKWebView?
@@ -177,6 +336,13 @@ final class HifzNativeEngine: NSObject, WKScriptMessageHandler, UNUserNotificati
     }
 
     func installDefaultQuickActions() {
+        let teacherItem = UIApplicationShortcutItem(
+            type: "com.tahafirat.hifz.teacher",
+            localizedTitle: "Sanal Hocaya Ezber Ver",
+            localizedSubtitle: "Sesli kelime kelime ezber kontrolü",
+            icon: UIApplicationShortcutIcon(systemImageName: "waveform.and.mic"),
+            userInfo: nil
+        )
         let dailyItem = UIApplicationShortcutItem(
             type: "com.tahafirat.hifz.daily",
             localizedTitle: "Günlük Ezber Planı",
@@ -191,14 +357,7 @@ final class HifzNativeEngine: NSObject, WKScriptMessageHandler, UNUserNotificati
             icon: UIApplicationShortcutIcon(systemImageName: "repeat.circle"),
             userInfo: nil
         )
-        let quizItem = UIApplicationShortcutItem(
-            type: "com.tahafirat.hifz.challenge",
-            localizedTitle: "Sağlamlık Sınaması",
-            localizedSubtitle: "İpuçsuz ezber kontrolü",
-            icon: UIApplicationShortcutIcon(systemImageName: "checkmark.seal"),
-            userInfo: nil
-        )
-        UIApplication.shared.shortcutItems = [dailyItem, coachItem, quizItem]
+        UIApplication.shared.shortcutItems = [teacherItem, dailyItem, coachItem]
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -209,6 +368,13 @@ final class HifzNativeEngine: NSObject, WKScriptMessageHandler, UNUserNotificati
         case "haptic":
             let style = (body["style"] as? String) ?? "light"
             triggerHaptic(style: style)
+
+        case "startTeacher":
+            let locale = (body["locale"] as? String) ?? "ar-SA"
+            HifzVirtualTeacherEngine.shared.startSession(localeIdentifier: locale)
+
+        case "stopTeacher":
+            HifzVirtualTeacherEngine.shared.stopSession(silent: false)
 
         case "scheduleReminder":
             let hour = (body["hour"] as? Int) ?? 20
@@ -286,7 +452,7 @@ final class HifzNativeEngine: NSObject, WKScriptMessageHandler, UNUserNotificati
             let content = UNMutableNotificationContent()
             content.title = "Hıfz · Günlük Ezber Vakti"
             content.body = dueCount > 0
-                ? "Bugün tekrar bekleyen \(dueCount) ayet/durak var. 5 dakikalık 3+3 Rabt çalışmasıyla ezberini sağlamlaştır."
+                ? "Bugün tekrar bekleyen \(dueCount) ayet/durak var. Sanal Hoca ve 3+3 Rabt ile ezberini sağlamlaştır."
                 : "Günlük 5 dakikalık sure ve dua ezber tekrarın için atölyen hazır."
             content.sound = .default
 

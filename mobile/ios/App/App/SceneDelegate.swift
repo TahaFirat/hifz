@@ -16,7 +16,7 @@ class HifzRootBridgeViewController: CAPBridgeViewController {
             wv.scrollView.bounces = true
             wv.scrollView.alwaysBounceHorizontal = false
             wv.isOpaque = false
-            wv.backgroundColor = UIColor(red: 6.0/255.0, green: 20.0/255.0, blue: 18.0/255.0, alpha: 1.0)
+            wv.backgroundColor = UIColor(red: 244.0/255.0, green: 251.0/255.0, blue: 248.0/255.0, alpha: 1.0)
         }
     }
 
