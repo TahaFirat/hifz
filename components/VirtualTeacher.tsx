@@ -323,8 +323,7 @@ export default function VirtualTeacher({
           </span>
           <h2>{title} — Hocaya Ezber Ver</h2>
           <p>
-            Mikrofonu açıp ezberden oku; doğru telaffuz ettiğin her kelime anında yeşil yanarak açılır. Takıldığın yerde{' '}
-            <strong>“💡 Fetih Ver”</strong> düğmesiyle tıpkı gerçek hafızlık dersindeki gibi tek kelimelik ipucu alabilirsin.
+            Mikrofonu açıp ezberden oku; doğru okuduğun her kelime yeşil yanarak açılır, takılınca <strong>“💡 Fetih Ver”</strong> ipucu verir.
           </p>
         </div>
 

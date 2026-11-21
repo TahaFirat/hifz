@@ -75,6 +75,7 @@ export default function HifzWorkshop({
   );
   const [category, setCategory] = useState(selection.category);
   const [selected, setSelected] = useState<Content>(selection.content);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [range, setRange] = useState<[number, number]>(selection.range);
   const [custom, setCustom] = useState(false);
@@ -373,6 +374,7 @@ export default function HifzWorkshop({
   const select = (c: Content) => {
     setQuery('');
     setCustom(false);
+    setPickerOpen(false);
     if (c.key === selected.key) return;
     resetWork();
     setSelected(c);
@@ -381,7 +383,13 @@ export default function HifzWorkshop({
 
   const changeCategory = (c: string) => {
     setCategory(c);
-    select((c === 'basics' ? basics : c === 'prayers' ? prayerCatalog : allSelections)[0]);
+    setPickerOpen(true);
+    const nextItem = (c === 'basics' ? basics : c === 'prayers' ? prayerCatalog : allSelections)[0];
+    if (nextItem.key !== selected.key) {
+      resetWork();
+      setSelected(nextItem);
+      setRange([nextItem.start, nextItem.end - nextItem.start > 19 ? nextItem.start + 4 : nextItem.end]);
+    }
   };
 
   const changeMode = (m: Mode) => {
@@ -665,30 +673,54 @@ export default function HifzWorkshop({
           </>
         ) : (
           <>
-            {/* Content Library Selector */}
-            <section className="library" aria-label="İçerik seçimi">
-              <label className="search">
-                <Search size={18} />
-                <input aria-label="Sure veya dua ara" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sure veya dua ara…" />
-                {query && (
-                  <button type="button" className="clear-search" aria-label="Aramayı temizle" onClick={() => setQuery('')}>
-                    <X size={16} />
+            {/* Compact Collapsible Content Library Selector */}
+            <section className="library-drawer" aria-label="İçerik seçimi">
+              <div className="library-summary-bar">
+                <button
+                  type="button"
+                  className="surah-picker-trigger"
+                  aria-expanded={pickerOpen}
+                  onClick={() => setPickerOpen((o) => !o)}
+                >
+                  <span className="picker-label">Seçili Metin:</span>
+                  <strong>{selected.name}</strong>
+                  <span className="picker-chevron">{pickerOpen ? '▴ Kapat' : '▾ Sure / Dua Değiştir'}</span>
+                </button>
+                {mode !== 'teacher' && (
+                  <button type="button" className="quick-teacher-cta" onClick={() => changeMode('teacher')}>
+                    <Mic size={14} />
+                    <span>Hocaya Dinlet</span>
                   </button>
                 )}
-              </label>
-              <div className={`chips ${category === 'basics' || category === 'all' || query ? 'expanded' : ''}`} aria-label="Sureler ve dualar">
-                {filtered.map((c) => (
-                  <button
-                    key={c.key}
-                    className={`surah-chip ${selected.key === c.key ? 'chosen' : ''}`}
-                    aria-pressed={selected.key === c.key}
-                    title={passageCaption(c) || undefined}
-                    onClick={() => select(c)}
-                  >
-                    {c.name}
-                  </button>
-                ))}
               </div>
+
+              {pickerOpen && (
+                <div className="library-drawer-body">
+                  <label className="search">
+                    <Search size={18} />
+                    <input aria-label="Sure veya dua ara" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sure veya dua ara…" />
+                    {query && (
+                      <button type="button" className="clear-search" aria-label="Aramayı temizle" onClick={() => setQuery('')}>
+                        <X size={16} />
+                      </button>
+                    )}
+                  </label>
+                  <div className="chips expanded" aria-label="Sureler ve dualar">
+                    {filtered.map((c) => (
+                      <button
+                        key={c.key}
+                        className={`surah-chip ${selected.key === c.key ? 'chosen' : ''}`}
+                        aria-pressed={selected.key === c.key}
+                        title={passageCaption(c) || undefined}
+                        onClick={() => select(c)}
+                      >
+                        {c.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {selected.end - selected.start > 19 && (
                 <div className="range-row" aria-label="Ayet aralığı">
                   {Array.from({ length: Math.ceil((selected.end - selected.start + 1) / 5) }, (_, i) => {
